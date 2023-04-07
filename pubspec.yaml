@@ -1,0 +1,35 @@
+name: gate
+version: 1.0.0+1
+publish_to: none
+description: A new Flutter project.
+environment: 
+  sdk: '>=2.18.4 <3.0.0'
+
+dependencies: 
+  cupertino_icons: ^1.0.2
+  get: 4.6.5
+  firebase_core: 2.8.0
+  firebase_auth: 4.3.0
+  cloud_firestore: 4.4.5
+  firebase_storage: 11.0.16
+  image_picker: 0.8.7
+  awesome_bottom_bar: 1.2.2
+  intl: 0.17.0
+  geolocator: 9.0.2
+  geocoding: 2.1.0
+  syncfusion_flutter_datepicker: 20.3.60
+  syncfusion_flutter_pdf: 20.3.60
+  path_provider: 2.0.14
+  open_file: 3.2.1
+  pdf: 3.10.1
+  flutter: 
+    sdk: flutter
+
+dev_dependencies: 
+  flutter_lints: ^2.0.0
+  flutter_test: 
+    sdk: flutter
+
+flutter: 
+  uses-material-design: true
+
