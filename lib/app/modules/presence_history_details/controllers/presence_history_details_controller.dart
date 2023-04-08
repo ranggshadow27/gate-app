@@ -4,10 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:image/image.dart' as img;
 
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -69,6 +72,21 @@ class PresenceHistoryDetailsController extends GetxController {
     } else {
       final pdf = pw.Document();
 
+      var getRegularFont =
+          await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+      var robotoRegularFont = pw.Font.ttf(getRegularFont);
+
+      var getBoldFont = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
+      var robotoBoldFont = pw.Font.ttf(getBoldFont);
+
+      Map<String, pw.Font> fonts = {
+        'regular': robotoRegularFont,
+        'bold': robotoBoldFont,
+      };
+
+      var imageBytes = await rootBundle.load('assets/img/infracomlog.png');
+      var image = imageBytes.buffer.asUint8List();
+
       pdf.addPage(
         pw.MultiPage(
           footer: (context) => pw.Row(
@@ -107,37 +125,61 @@ class PresenceHistoryDetailsController extends GetxController {
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.SizedBox(
-                    height: 20,
+                  pw.Row(
+                    children: [
+                      pw.Expanded(
+                        flex: 1,
+                        child: pw.Container(
+                          width: 80,
+                          child: pw.Image(
+                            pw.MemoryImage(image),
+                            fit: pw.BoxFit.fitWidth,
+                          ),
+                        ),
+                      ),
+                      pw.Spacer(flex: 1),
+                      pw.Expanded(
+                        flex: 2,
+                        child: pw.Text(
+                          "SURAT PERINTAH LEMBUR",
+                          style: pw.TextStyle(
+                            font: robotoBoldFont,
+                            fontSize: 12,
+                            decoration: pw.TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      pw.Spacer(flex: 2),
+                    ],
                   ),
+
                   // pw.Text("jumlah data absen: ${dataPresence.length}",
                   //     textAlign: pw.TextAlign.left),
                   // pw.Text("jumlah data user: ${dataUsers.length}"),
 
-                  pw.Center(
-                    child: pw.Text(
-                      "SURAT PERINTAH LEMBUR",
-                      style: pw.TextStyle(
-                        fontWeight: pw.FontWeight.bold,
-                        fontSize: 12,
-                        decoration: pw.TextDecoration.underline,
-                      ),
-                    ),
+                  RtitleRow(dataUsers, 'Name', 'fullname', fonts),
+                  pw.SizedBox(height: 2),
+                  RtitleRow(dataUsers, 'NIP', 'nip', fonts),
+                  pw.SizedBox(height: 2),
+                  RtitleRow(dataUsers, 'Jabatan', 'grade', fonts),
+                  pw.SizedBox(height: 2),
+                  RtitleRow(
+                    dataUsers,
+                    'Divisi/Departement',
+                    'createdAt',
+                    fonts,
                   ),
-                  pw.SizedBox(
-                    height: 20,
+                  pw.SizedBox(height: 2),
+                  RtitleRow(
+                    dataUsers,
+                    'Lokasi Kerja',
+                    'address',
+                    fonts,
                   ),
-                  RtitleRow(dataUsers, 'Name', 'fullname'),
-                  pw.SizedBox(height: 2),
-                  RtitleRow(dataUsers, 'NIP', 'nip'),
-                  pw.SizedBox(height: 2),
-                  RtitleRow(dataUsers, 'Jabatan', 'grade'),
-                  pw.SizedBox(height: 2),
-                  RtitleRow(dataUsers, 'Divisi/Departement', 'createdAt'),
-                  pw.SizedBox(height: 2),
-                  RtitleRow(dataUsers, 'Lokasi Kerja', 'address'),
-                  pw.SizedBox(height: 20),
-                  buildTable(dataPresence),
+                  pw.SizedBox(height: 10),
+                  buildTable(dataPresence, fonts),
+
+                  pw.SizedBox(height: 10),
                 ],
               ),
             ];
@@ -156,12 +198,17 @@ class PresenceHistoryDetailsController extends GetxController {
     }
   }
 
-  pw.Row RtitleRow(List<dynamic> dataUsers, String text, String dataValue) {
-    pw.TextStyle boldFontStyle = pw.TextStyle(fontWeight: pw.FontWeight.bold);
+  pw.Row RtitleRow(
+    List<dynamic> dataUsers,
+    String text,
+    String dataValue,
+    Map<String, pw.Font> font,
+  ) {
+    pw.TextStyle boldFontStyle = pw.TextStyle(font: font['bold'], fontSize: 10);
     return pw.Row(
       children: [
         pw.Container(
-          width: 110,
+          width: 120,
           child: pw.Text(
             text,
             style: boldFontStyle,

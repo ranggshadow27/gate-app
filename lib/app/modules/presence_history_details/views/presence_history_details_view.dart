@@ -23,6 +23,7 @@ class PresenceHistoryDetailsView
         padding: EdgeInsets.all(30),
         children: [
           Text("Ini adalah History Persensimu boy!"),
+          Image.asset('assets/img/infracomlog.png'),
           ElevatedButton(
             onPressed: () {
               Get.dialog(Dialog(
