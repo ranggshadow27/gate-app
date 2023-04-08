@@ -93,29 +93,25 @@ class PresenceHistoryDetailsController extends GetxController {
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
-              pw.Column(
-                children: [
-                  pw.Text("Penerima Tugas,"),
-                  pw.SizedBox(height: 60),
-                  pw.Text(dataUsers[0]['fullname']),
-                  pw.Text("Gateway Operator"),
-                ],
+              RFooterPage(
+                  dataUsers,
+                  "Penerima Tugas,",
+                  '${dataUsers[0]['fullname']}',
+                  "Gateway Operator",
+                  fonts['bold']),
+              RFooterPage(
+                dataUsers,
+                "Pemberi Tugas,",
+                "Sifaudin",
+                "GO Supervisor",
+                fonts['bold'],
               ),
-              pw.Column(
-                children: [
-                  pw.Text("Pemberi Tugas,"),
-                  pw.SizedBox(height: 60),
-                  pw.Text(dataUsers[0]['fullname']),
-                  pw.Text("GO Supervisor"),
-                ],
-              ),
-              pw.Column(
-                children: [
-                  pw.Text("Menyetujui,"),
-                  pw.SizedBox(height: 60),
-                  pw.Text(dataUsers[0]['fullname']),
-                  pw.Text("Gateway Manager"),
-                ],
+              RFooterPage(
+                dataUsers,
+                "Menyetujui,",
+                "Eko Cahyo P.",
+                "Gateway Manager",
+                fonts['bold'],
               ),
             ],
           ),
@@ -158,18 +154,18 @@ class PresenceHistoryDetailsController extends GetxController {
                   // pw.Text("jumlah data user: ${dataUsers.length}"),
 
                   RtitleRow(dataUsers, 'Name', 'fullname', fonts),
-                  pw.SizedBox(height: 2),
+
                   RtitleRow(dataUsers, 'NIP', 'nip', fonts),
-                  pw.SizedBox(height: 2),
+
                   RtitleRow(dataUsers, 'Jabatan', 'grade', fonts),
-                  pw.SizedBox(height: 2),
+
                   RtitleRow(
                     dataUsers,
                     'Divisi/Departement',
                     'createdAt',
                     fonts,
                   ),
-                  pw.SizedBox(height: 2),
+
                   RtitleRow(
                     dataUsers,
                     'Lokasi Kerja',
@@ -198,6 +194,27 @@ class PresenceHistoryDetailsController extends GetxController {
     }
   }
 
+  pw.Column RFooterPage(
+    List<dynamic> dataUsers,
+    String title,
+    String dataValue,
+    String grade,
+    pw.Font? font,
+  ) {
+    pw.TextStyle fontStyle = pw.TextStyle(font: font, fontSize: 10);
+    return pw.Column(
+      children: [
+        pw.Text(title, style: fontStyle),
+        pw.SizedBox(height: 60),
+        pw.Text(
+          dataValue.toUpperCase(),
+          style: fontStyle.copyWith(decoration: pw.TextDecoration.underline),
+        ),
+        pw.Text(grade.toUpperCase(), style: fontStyle),
+      ],
+    );
+  }
+
   pw.Row RtitleRow(
     List<dynamic> dataUsers,
     String text,
@@ -208,11 +225,15 @@ class PresenceHistoryDetailsController extends GetxController {
     return pw.Row(
       children: [
         pw.Container(
-          width: 120,
+          width: 100,
           child: pw.Text(
-            "${text} : ",
+            text,
             style: boldFontStyle,
           ),
+        ),
+        pw.Text(
+          " : ",
+          style: boldFontStyle,
         ),
         pw.Text(
           dataUsers[0][dataValue],
