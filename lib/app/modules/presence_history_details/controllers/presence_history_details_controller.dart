@@ -210,13 +210,9 @@ class PresenceHistoryDetailsController extends GetxController {
         pw.Container(
           width: 120,
           child: pw.Text(
-            text,
+            "${text} : ",
             style: boldFontStyle,
           ),
-        ),
-        pw.Text(
-          " : ",
-          style: boldFontStyle,
         ),
         pw.Text(
           dataUsers[0][dataValue],
