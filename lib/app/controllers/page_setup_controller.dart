@@ -12,6 +12,8 @@ class PageSetupController extends GetxController {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+  TextEditingController overtimeTextC = TextEditingController();
+
   RxInt initialPage = 0.obs;
   RxBool isLoading = false.obs;
 
@@ -33,7 +35,7 @@ class PageSetupController extends GetxController {
             ),
           ),
         );
-        await doPresence();
+        await doPresence(presenceType: "normal");
         break;
 
       case 2:
@@ -115,7 +117,7 @@ class PageSetupController extends GetxController {
     };
   }
 
-  Future<void> doPresence() async {
+  Future<void> doPresence({required String presenceType}) async {
     try {
       isLoading.value = true;
       Map<String, dynamic> positionResponse = await getPosition();
@@ -129,8 +131,8 @@ class PageSetupController extends GetxController {
         );
 
         double distance = Geolocator.distanceBetween(
-          -6.3525726,
-          107.1425059,
+          -6.354521,
+          107.143887,
           position.latitude,
           position.longitude,
         );
@@ -145,11 +147,23 @@ class PageSetupController extends GetxController {
           getAddress: address,
         );
 
-        await setPresence(
-          getAddress: address,
-          getPosition: position,
-          getDistance: distance,
-        );
+        if (presenceType == "normal") {
+          await setPresence(
+            getAddress: address,
+            getPosition: position,
+            getDistance: distance,
+            collectionString: "presence",
+          );
+        } else if (presenceType == "overtime") {
+          await setPresence(
+            getAddress: address,
+            getPosition: position,
+            getDistance: distance,
+            collectionString: "overtime",
+          );
+        } else {
+          Get.snackbar("Error", "No action");
+        }
 
         // Get.snackbar(
         //   positionResponse["message"],
@@ -173,6 +187,7 @@ class PageSetupController extends GetxController {
     required Position getPosition,
     required String getAddress,
     required double getDistance,
+    required String collectionString,
   }) async {
     String uid = auth.currentUser!.uid;
 
@@ -185,8 +200,10 @@ class PageSetupController extends GetxController {
     String dateID = DateFormat("dd-MM-yyyy").format(now);
     String yesterdayID = DateFormat("dd-MM-yyyy").format(formatYesterday);
 
-    CollectionReference<Map<String, dynamic>> collectionRef =
-        await firestore.collection('users').doc(uid).collection("presence");
+    CollectionReference<Map<String, dynamic>> collectionRef = await firestore
+        .collection('users')
+        .doc(uid)
+        .collection(collectionString);
 
     QuerySnapshot<Map<String, dynamic>> snapshotPresence =
         await collectionRef.get();
@@ -197,7 +214,23 @@ class PageSetupController extends GetxController {
     DocumentSnapshot<Map<String, dynamic>> getYesterdayData =
         await collectionRef.doc(yesterdayID).get();
 
-    if (getDistance <= 300.0) {
+    print(overtimeTextC.text);
+
+    // String getMinutesNumber = getMinutesDiff.replaceAll(" Minutes", "");
+    // int convertToInt = int.parse(getMinutesNumber);
+
+    // print("This is In --------------------> $getPresenceInTime");
+    // print("This is Now --------------------> $now");
+    // print("This is Duration --------------------> $timeDiff");
+    // print("This is Duration in Minutes --------------------> $getMinutesDiff");
+    // print(
+    //     "This is Duration in Minutes but just number --------------------> ${getMinutesNumber}");
+    // print(
+    //     "This is a converted Minutes ---------------------> ${convertToInt} type is ${convertToInt.runtimeType}");
+    // print(
+    //     "Jumlah Uang Lemburan -------------------> ${(convertToInt / 60) * 150000}");
+
+    if (getDistance <= 100.0) {
       inArea = true;
     }
 
@@ -207,17 +240,20 @@ class PageSetupController extends GetxController {
       //Absen Masuk Pertama Kali
       await Get.defaultDialog(
         title: "Konfirmasi",
-        middleText: "Apakah anda ingin mengisi absensi masuk?",
+        middleText:
+            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
         actions: [
           BackButton(),
           ConfirmButton(
-            type: "Masuk",
+            type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
             collectionRef: collectionRef,
             getAddress: getAddress,
             getPosition: getPosition,
             inArea: inArea,
             now: now,
             dateID: dateID,
+            //
+            overtimeDesc: overtimeTextC.text,
           ),
         ],
       );
@@ -229,17 +265,20 @@ class PageSetupController extends GetxController {
           //Absen Masuk Ketika Kemarin libur/tidak ada absensi.
           await Get.defaultDialog(
             title: "Konfirmasi",
-            middleText: "Apakah anda ingin mengisi absensi masuk?",
+            middleText:
+                "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
             actions: [
               BackButton(),
               ConfirmButton(
-                type: "Masuk",
+                type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
                 collectionRef: collectionRef,
                 getAddress: getAddress,
                 getPosition: getPosition,
                 inArea: inArea,
                 now: now,
                 dateID: dateID,
+                //
+                overtimeDesc: overtimeTextC.text,
               ),
             ],
           );
@@ -251,20 +290,29 @@ class PageSetupController extends GetxController {
             Get.snackbar("Peringatan",
                 "Anda sudah absen masuk dan pulang hari ini, apakah ingin lembur?");
           } else {
+            DateTime getPresenceInTime =
+                DateTime.parse(dataToday!['masuk']['datetime']);
+            Duration timeDiff = now.difference(getPresenceInTime);
+            String getMinutesDiff = "${timeDiff.inMinutes} Minutes";
             //Absen Pulang Ketika Kemarin Libur/Tidak ada absensi.
             await Get.defaultDialog(
               title: "Konfirmasi",
-              middleText: "Apakah anda ingin mengisi absensi pulang?",
+              middleText:
+                  "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
               actions: [
                 BackButton(),
                 ConfirmButton(
-                  type: "Pulang",
+                  type: collectionString == "presence"
+                      ? "Pulang"
+                      : "Lembur Pulang",
                   collectionRef: collectionRef,
                   getAddress: getAddress,
                   getPosition: getPosition,
                   inArea: inArea,
                   now: now,
                   dateID: dateID,
+                  //
+                  overtimeTotal: getMinutesDiff,
                 ),
               ],
             );
@@ -275,7 +323,8 @@ class PageSetupController extends GetxController {
           //Absen Pulang saat Shift 3
           await Get.defaultDialog(
             title: "Konfirmasi",
-            middleText: "Apakah anda ingin mengisi absensi pulang?",
+            middleText:
+                "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
             actions: [
               BackButton(),
               ConfirmButton(
@@ -294,17 +343,21 @@ class PageSetupController extends GetxController {
             //Absen Masuk Normal
             await Get.defaultDialog(
               title: "Konfirmasi",
-              middleText: "Apakah anda ingin mengisi absensi masuk?",
+              middleText:
+                  "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
               actions: [
                 BackButton(),
                 ConfirmButton(
-                  type: "Masuk",
+                  type:
+                      collectionString == "presence" ? "Masuk" : "Lembur Masuk",
                   collectionRef: collectionRef,
                   getAddress: getAddress,
                   getPosition: getPosition,
                   inArea: inArea,
                   now: now,
                   dateID: dateID,
+                  //
+                  overtimeDesc: overtimeTextC.text,
                 ),
               ],
             );
@@ -317,20 +370,29 @@ class PageSetupController extends GetxController {
               Get.snackbar("Peringatan",
                   "Anda sudah absen masuk dan pulang hari ini, apakah ingin lembur?");
             } else {
+              DateTime getPresenceInTime =
+                  DateTime.parse(dataToday!['masuk']['datetime']);
+              Duration timeDiff = now.difference(getPresenceInTime);
+              String getMinutesDiff = "${timeDiff.inMinutes} Minutes";
               //Absen Pulang Normal
               await Get.defaultDialog(
                 title: "Konfirmasi",
-                middleText: "Apakah anda ingin mengisi absensi pulang?",
+                middleText:
+                    "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
                 actions: [
                   BackButton(),
                   ConfirmButton(
-                    type: "Pulang",
+                    type: collectionString == "presence"
+                        ? "Pulang"
+                        : "Lembur Pulang",
                     collectionRef: collectionRef,
                     getAddress: getAddress,
                     getPosition: getPosition,
                     inArea: inArea,
                     now: now,
                     dateID: dateID,
+                    //
+                    overtimeTotal: getMinutesDiff,
                   ),
                 ],
               );
@@ -367,6 +429,8 @@ class ConfirmButton extends StatelessWidget {
     required this.now,
     this.dateID,
     this.yesterdayID,
+    this.overtimeTotal,
+    this.overtimeDesc,
   }) : super(key: key);
 
   final String type;
@@ -377,6 +441,8 @@ class ConfirmButton extends StatelessWidget {
   final bool inArea;
   final String? dateID;
   final String? yesterdayID;
+  final String? overtimeTotal;
+  final String? overtimeDesc;
 
   @override
   Widget build(BuildContext context) {
@@ -433,9 +499,44 @@ class ConfirmButton extends StatelessWidget {
                       Get.snackbar(
                           "Berhasil", "Anda sudah melakukan absensi Pulang.");
                     }
-                  : () async {
-                      print("else");
-                    },
+                  : type == "Lembur Masuk"
+                      ? () async {
+                          await collectionRef.doc(dateID).set(
+                            {
+                              "date": now.toIso8601String(),
+                              "masuk": {
+                                "datetime": now.toIso8601String(),
+                                "latitude": getPosition.latitude,
+                                "longitude": getPosition.longitude,
+                                "address": getAddress,
+                                "inArea": inArea,
+                              },
+                              "description": overtimeDesc
+                            },
+                          );
+                          Get.back();
+                          Get.snackbar(
+                              "Berhasil", "Anda sudah melakukan Lembur Masuk.");
+                        }
+                      : type == "Lembur Pulang"
+                          ? () async {
+                              await collectionRef.doc(dateID).update(
+                                {
+                                  "pulang": {
+                                    "datetime": now.toIso8601String(),
+                                    "latitude": getPosition.latitude,
+                                    "longitude": getPosition.longitude,
+                                    "address": getAddress,
+                                    "inArea": inArea,
+                                  },
+                                  "total": overtimeTotal,
+                                },
+                              );
+                              Get.back();
+                              Get.snackbar("Berhasil",
+                                  "Anda sudah melakukan Lembur Pulang.");
+                            }
+                          : () => print("else"),
       child: Text("Confirm"),
     );
   }

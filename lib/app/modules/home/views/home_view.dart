@@ -92,6 +92,43 @@ class HomeView extends GetView<HomeController> {
                           child: Icon(Icons.person),
                         ),
                       ),
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: ElevatedButton(
+                          onPressed: () => Get.dialog(
+                            Dialog(
+                              child: Container(
+                                padding: EdgeInsets.all(30),
+                                height: Get.height * .4,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("Keterangan Lembur"),
+                                    SizedBox(height: 20),
+                                    TextField(
+                                      controller: pageController.overtimeTextC,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        hintText: "Keterangan Lembur",
+                                      ),
+                                    ),
+                                    SizedBox(height: 20),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        fixedSize: Size(Get.width, 40),
+                                      ),
+                                      onPressed: () => pageController
+                                          .doPresence(presenceType: "overtime"),
+                                      child: Text("Submit Lembur"),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          child: Icon(Icons.vaccines),
+                        ),
+                      ),
                     ],
                   );
                 },

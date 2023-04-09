@@ -6,10 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../../routes/app_pages.dart';
-import '../controllers/presence_history_details_controller.dart';
+import '../controllers/presence_history_controller.dart';
 
-class PresenceHistoryDetailsView
-    extends GetView<PresenceHistoryDetailsController> {
+class PresenceHistoryDetailsView extends GetView<PresenceHistoryController> {
   final dataController = Get.put(DataController());
 
   @override
@@ -43,8 +42,9 @@ class PresenceHistoryDetailsView
                               dateObject.startDate!, dateObject.endDate!);
                           await dataController.fetchData();
                           controller.createPDF(
-                            dataController.dataPresence,
-                            dataController.dataUser,
+                            dataPresence: dataController.dataPresence,
+                            dataUser: dataController.dataUser,
+                            dataOvertime: dataController.dataOvertime,
                           );
                         }
                       }
@@ -56,7 +56,7 @@ class PresenceHistoryDetailsView
             },
             child: Icon(Icons.filter_1_outlined),
           ),
-          GetBuilder<PresenceHistoryDetailsController>(
+          GetBuilder<PresenceHistoryController>(
             builder: (c) => FutureBuilder<QuerySnapshot<Map<String, dynamic>>>(
               future: controller.getUserPresenceHistory(),
               builder: (context, snapshot) {
@@ -170,7 +170,7 @@ class DatePickerDialog extends StatelessWidget {
     required this.controller,
   }) : super(key: key);
 
-  final PresenceHistoryDetailsController controller;
+  final PresenceHistoryController controller;
 
   @override
   Widget build(BuildContext context) {
