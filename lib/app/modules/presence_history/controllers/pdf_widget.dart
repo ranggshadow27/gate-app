@@ -19,7 +19,11 @@ pw.Widget buildTable({
           tableHeaders(title: 'Jam Masuk', font: font['bold'], flex: 2),
           tableHeaders(title: 'Jam Pulang', font: font['bold'], flex: 2),
           tableHeaders(title: 'Keterangan Lembur', font: font['bold'], flex: 4),
-          tableHeaders(title: 'Keperluan', font: font['bold'], flex: 2),
+          tableHeaders(
+            title: tableType == "Presence" ? 'Keperluan' : 'Total',
+            font: font['bold'],
+            flex: 2,
+          ),
         ],
       ),
       for (var i = 0; i < dataValue.length; i++)
@@ -49,24 +53,47 @@ pw.Widget buildTable({
               tableType == "Presence" ? "-" : dataValue[i]['description'],
               font['bold'],
             ),
-            RNormalRows(
-              getHour(dataValue, i) < 10
-                  ? "Shift 1"
-                  : getHour(dataValue, i) < 18
-                      ? "Shift 2"
-                      : "Shift 3",
-              font['bold'],
-            ),
+            tableType == "Presence"
+                ? RNormalRows(
+                    getHour(dataValue, i) > 3 && getHour(dataValue, i) < 12
+                        ? "Shift 1"
+                        : getHour(dataValue, i) < 18
+                            ? "Shift 2"
+                            : "Shift 3",
+                    font['bold'],
+                  )
+                : RNormalRows(
+                    dataValue[i]['total'] == null
+                        ? "-"
+                        : overtimeToHours(dataValue: dataValue, i: i) >= 8
+                            ? "1 Shift"
+                            : "${overtimeToHours(dataValue: dataValue, i: i)} Jam",
+                    font['bold'],
+                  ),
           ],
         ),
     ],
   );
 }
 
+int overtimeToHours({required List<dynamic> dataValue, required int i}) {
+  int overtime = 0;
+
+  String getUserOvertime =
+      dataValue[i]['total'].toString().replaceAll(" Minutes", "");
+
+  double overtimeToHours = int.parse(getUserOvertime) / 60;
+
+  overtime = overtimeToHours.toInt();
+  print(overtime);
+
+  return overtime;
+}
+
 pw.Expanded tableHeaders({
   required String title,
-  pw.Font? font,
   required int flex,
+  pw.Font? font,
 }) {
   return pw.Expanded(
     flex: flex,
