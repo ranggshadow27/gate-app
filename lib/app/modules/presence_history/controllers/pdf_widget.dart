@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
@@ -57,7 +56,8 @@ pw.Widget buildTable({
                 ? RNormalRows(
                     getHour(dataValue, i) > 3 && getHour(dataValue, i) < 12
                         ? "Shift 1"
-                        : getHour(dataValue, i) < 18
+                        : getHour(dataValue, i) > 13 &&
+                                getHour(dataValue, i) < 18
                             ? "Shift 2"
                             : "Shift 3",
                     font['bold'],

@@ -47,6 +47,48 @@ class AddUserView extends GetView<AddUserController> {
             ),
           ),
           SizedBox(height: 20),
+          Divider(),
+          SizedBox(height: 20),
+          TextField(
+            controller: controller.mainSalaryC,
+            decoration: InputDecoration(
+              labelText: 'Main Salary',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 20),
+          TextField(
+            controller: controller.dailySalaryC,
+            decoration: InputDecoration(
+              labelText: 'Daily Salary',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 20),
+          TextField(
+            controller: controller.allowanceSalaryC,
+            decoration: InputDecoration(
+              labelText: 'Allowance',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 20),
+          TextField(
+            controller: controller.bpjsC,
+            decoration: InputDecoration(
+              labelText: 'BPJS',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 20),
+          TextField(
+            controller: controller.bpjskC,
+            decoration: InputDecoration(
+              labelText: 'BPJS TK',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
               if (controller.isLoading.isFalse) {

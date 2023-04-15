@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:gate/main.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 
 import '../../../routes/app_pages.dart';
 
@@ -15,6 +15,11 @@ class AddUserController extends GetxController {
   TextEditingController gradeC = TextEditingController();
   TextEditingController fullnameC = TextEditingController();
   TextEditingController adminPassC = TextEditingController();
+  TextEditingController mainSalaryC = TextEditingController();
+  TextEditingController dailySalaryC = TextEditingController();
+  TextEditingController allowanceSalaryC = TextEditingController();
+  TextEditingController bpjsC = TextEditingController();
+  TextEditingController bpjskC = TextEditingController();
 
   RxBool isLoading = false.obs;
 
@@ -46,9 +51,18 @@ class AddUserController extends GetxController {
               "email": emailC.text,
               "grade": gradeC.text,
               "createdAt": DateTime.now().toIso8601String(),
-              // "role" : gradeC.text,
+              "uid": uid,
+              "role": "user",
             },
           );
+
+          await firestore.collection('salary').doc(uid).set({
+            'main': int.parse(mainSalaryC.text),
+            'daily': int.parse(dailySalaryC.text),
+            'allowance': int.parse(allowanceSalaryC.text),
+            'bpjs': int.parse(bpjsC.text),
+            'bpjsk': int.parse(bpjskC.text),
+          });
           print("Lagi logout");
           await auth.signOut();
 
@@ -60,7 +74,7 @@ class AddUserController extends GetxController {
           );
           print("${userCredentialAdmin.user!.email}");
 
-          Get.offAllNamed(Routes.HOME);
+          Get.offAllNamed(Routes.ADMIN_HOME);
           Get.snackbar("Berhasil", "User berhasil ditambahkan");
         }
       } on FirebaseAuthException catch (e) {
@@ -72,7 +86,7 @@ class AddUserController extends GetxController {
         } else if (e.code == 'email-already-in-use') {
           Get.snackbar(
             'Terjadi Kesalahan',
-            "Gagal menambahkan user, Email sudah digunakan",
+            "Gagal menambahkan user, Email sudah digunakan. Mohon untuk menghubungi database admin",
           );
         } else if (e.code == 'wrong-password') {
           Get.snackbar('Terjadi Kesalahan', "Password salah.");
@@ -91,7 +105,12 @@ class AddUserController extends GetxController {
     if (emailC.text.isNotEmpty &&
         nipC.text.isNotEmpty &&
         gradeC.text.isNotEmpty &&
-        fullnameC.text.isNotEmpty) {
+        fullnameC.text.isNotEmpty &&
+        mainSalaryC.text.isNotEmpty &&
+        dailySalaryC.text.isNotEmpty &&
+        allowanceSalaryC.text.isNotEmpty &&
+        bpjsC.text.isNotEmpty &&
+        bpjskC.text.isNotEmpty) {
       Get.defaultDialog(
         title: "Verifikasi Admin",
         content: Column(

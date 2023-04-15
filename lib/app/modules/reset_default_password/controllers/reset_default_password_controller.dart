@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,12 +11,24 @@ class ResetDefaultPasswordController extends GetxController {
   TextEditingController confirmNewPassC = TextEditingController();
 
   FirebaseAuth auth = FirebaseAuth.instance;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   RxBool isLoading = false.obs;
+  Map<String, dynamic>? userRole;
+
+  Future userCheck() async {
+    String uid = auth.currentUser!.uid;
+
+    DocumentSnapshot<Map<String, dynamic>> getUserRole =
+        await firestore.collection('users').doc(uid).get();
+
+    return getUserRole.data();
+  }
 
   void changePassword() async {
     if (confirmNewPassC.text.isNotEmpty || newPassC.text.isNotEmpty) {
       if (newPassC.text == confirmNewPassC.text) {
-        if (confirmNewPassC != "Pass@isip123") {
+        if (confirmNewPassC.text != "Pass@isip123") {
           String email = auth.currentUser!.email!;
           isLoading.value = true;
           try {
@@ -28,7 +41,14 @@ class ResetDefaultPasswordController extends GetxController {
               password: confirmNewPassC.text,
             );
 
-            Get.offAllNamed(Routes.HOME);
+            userRole = await userCheck();
+            print(userRole);
+
+            if (userRole?['role'] == "user") {
+              Get.offAllNamed(Routes.HOME);
+            } else if (userRole!['role'] == "administrator") {
+              Get.offAllNamed(Routes.ADMIN_HOME);
+            }
             Get.snackbar("Success", "Password berhasil diganti");
           } on FirebaseAuthException catch (e) {
             if (e.code == "weak-password") {

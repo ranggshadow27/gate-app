@@ -113,13 +113,36 @@ class HomeView extends GetView<HomeController> {
                                       ),
                                     ),
                                     SizedBox(height: 20),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        fixedSize: Size(Get.width, 40),
-                                      ),
-                                      onPressed: () => pageController
-                                          .doPresence(presenceType: "overtime"),
-                                      child: Text("Submit Lembur"),
+                                    Obx(
+                                      () {
+                                        return ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            fixedSize: Size(Get.width, 40),
+                                          ),
+                                          onPressed: () {
+                                            if (pageController
+                                                .isLoading.isFalse) {
+                                              Get.dialog(
+                                                Dialog(
+                                                  backgroundColor:
+                                                      Colors.transparent,
+                                                  elevation: 0,
+                                                  child: Center(
+                                                      child:
+                                                          CircularProgressIndicator()),
+                                                ),
+                                              );
+                                              pageController.doPresence(
+                                                  presenceType: "overtime");
+                                            }
+                                          },
+                                          child: Text(
+                                            pageController.isLoading.isFalse
+                                                ? "Submit Lembur"
+                                                : "Loading ..",
+                                          ),
+                                        );
+                                      },
                                     ),
                                   ],
                                 ),
@@ -127,6 +150,13 @@ class HomeView extends GetView<HomeController> {
                             ),
                           ),
                           child: Icon(Icons.vaccines),
+                        ),
+                      ),
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: ElevatedButton(
+                          onPressed: () => Get.toNamed(Routes.PAYROLL),
+                          child: Icon(Icons.sticky_note_2_outlined),
                         ),
                       ),
                     ],

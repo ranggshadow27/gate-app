@@ -2,12 +2,24 @@ import 'package:get/get.dart';
 
 import 'package:gate/app/modules/add_user/bindings/add_user_binding.dart';
 import 'package:gate/app/modules/add_user/views/add_user_view.dart';
+import 'package:gate/app/modules/admin_home/bindings/admin_home_binding.dart';
+import 'package:gate/app/modules/admin_home/views/admin_home_view.dart';
+import 'package:gate/app/modules/admin_manage_users/bindings/admin_manage_users_binding.dart';
+import 'package:gate/app/modules/admin_manage_users/views/admin_manage_users_view.dart';
+import 'package:gate/app/modules/admin_user_presence_history/bindings/admin_user_presence_history_binding.dart';
+import 'package:gate/app/modules/admin_user_presence_history/views/admin_user_presence_history_view.dart';
+import 'package:gate/app/modules/admin_user_salary/bindings/admin_user_salary_binding.dart';
+import 'package:gate/app/modules/admin_user_salary/views/admin_user_salary_view.dart';
+import 'package:gate/app/modules/admin_view_users/bindings/admin_view_users_binding.dart';
+import 'package:gate/app/modules/admin_view_users/views/admin_view_users_view.dart';
 import 'package:gate/app/modules/forgot_password/bindings/forgot_password_binding.dart';
 import 'package:gate/app/modules/forgot_password/views/forgot_password_view.dart';
 import 'package:gate/app/modules/home/bindings/home_binding.dart';
 import 'package:gate/app/modules/home/views/home_view.dart';
 import 'package:gate/app/modules/login/bindings/login_binding.dart';
 import 'package:gate/app/modules/login/views/login_view.dart';
+import 'package:gate/app/modules/payroll/bindings/payroll_binding.dart';
+import 'package:gate/app/modules/payroll/views/payroll_view.dart';
 import 'package:gate/app/modules/presence_details/bindings/presence_details_binding.dart';
 import 'package:gate/app/modules/presence_details/views/presence_details_view.dart';
 import 'package:gate/app/modules/presence_history/bindings/presence_history_binding.dart';
@@ -80,6 +92,36 @@ class AppPages {
       name: _Paths.PRESENCE_HISTORY_DETAILS,
       page: () => PresenceHistoryDetailsView(),
       binding: PresenceHistoryDetailsBinding(),
+    ),
+    GetPage(
+      name: _Paths.PAYROLL,
+      page: () => PayrollView(),
+      binding: PayrollBinding(),
+    ),
+    GetPage(
+      name: _Paths.ADMIN_HOME,
+      page: () => AdminHomeView(),
+      binding: AdminHomeBinding(),
+    ),
+    GetPage(
+      name: _Paths.ADMIN_MANAGE_USERS,
+      page: () => AdminManageUsersView(),
+      binding: AdminManageUsersBinding(),
+    ),
+    GetPage(
+      name: _Paths.ADMIN_VIEW_USERS,
+      page: () => AdminViewUsersView(),
+      binding: AdminViewUsersBinding(),
+    ),
+    GetPage(
+      name: _Paths.ADMIN_USER_PRESENCE_HISTORY,
+      page: () => AdminUserPresenceHistoryView(),
+      binding: AdminUserPresenceHistoryBinding(),
+    ),
+    GetPage(
+      name: _Paths.ADMIN_USER_SALARY,
+      page: () => AdminUserSalaryView(),
+      binding: AdminUserSalaryBinding(),
     ),
   ];
 }

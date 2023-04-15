@@ -78,7 +78,7 @@ class PresenceDetailsView extends GetView<PresenceDetailsController> {
                           : "-"),
                       Text(
                         getUserHistory['pulang'] != null
-                            ? getUserHistory['pulang']['datetime'] == true
+                            ? getUserHistory['pulang']['inArea'] == true
                                 ? "Didalam Area"
                                 : "Diluar Area"
                             : "-",

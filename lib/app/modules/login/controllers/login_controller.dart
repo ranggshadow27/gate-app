@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,8 +12,19 @@ class LoginController extends GetxController {
   TextEditingController passC = TextEditingController();
 
   FirebaseAuth auth = FirebaseAuth.instance;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   RxBool isLoading = false.obs;
+  Map<String, dynamic>? userRole;
+
+  Future userCheck() async {
+    String uid = auth.currentUser!.uid;
+
+    DocumentSnapshot<Map<String, dynamic>> getUserRole =
+        await firestore.collection('users').doc(uid).get();
+
+    return getUserRole.data();
+  }
 
   Future<void> login() async {
     if (emailC.text.isNotEmpty && passC.text.isNotEmpty) {
@@ -25,13 +37,23 @@ class LoginController extends GetxController {
 
         if (userCredential.user != null) {
           if (userCredential.user!.emailVerified != false) {
-            if (passC.text == "Pass@isip123") {
-              Get.snackbar("Ganti Password Default",
-                  "Untuk keamanan akun dimohon untuk mengganti password default.");
-              Get.offAllNamed(Routes.RESET_DEFAULT_PASSWORD);
+            userRole = await userCheck();
+            if (userRole == null) {
+              auth.signOut();
+              Get.snackbar("Error", "User tidak terdaftar");
             } else {
-              Get.snackbar("Sukses", "Berhasil Login");
-              Get.offAllNamed(Routes.HOME);
+              if (passC.text == "Pass@isip123") {
+                Get.snackbar("Ganti Password Default",
+                    "Untuk keamanan akun dimohon untuk mengganti password default.");
+                Get.offAllNamed(Routes.RESET_DEFAULT_PASSWORD);
+              } else {
+                Get.snackbar("Sukses", "Berhasil Login");
+                if (userRole?['role'] == "user" || userRole?['role'] == null) {
+                  Get.offAllNamed(Routes.HOME);
+                } else {
+                  Get.offAllNamed(Routes.ADMIN_HOME);
+                }
+              }
             }
           } else {
             Get.defaultDialog(
@@ -64,6 +86,7 @@ class LoginController extends GetxController {
           Get.snackbar("Error", "Tidak dapat melakukan login, err ${e.code}");
         }
       } catch (e) {
+        print("${e}");
         Get.snackbar("Error", "Gagal login, err ${e}");
       } finally {
         isLoading.value = false;

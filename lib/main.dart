@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gate/app/controllers/page_setup_controller.dart';
@@ -14,7 +15,9 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  Map<String, dynamic>? userRole = await userCheck();
   final pageController = Get.put(PageSetupController(), permanent: true);
+
   runApp(
     StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
@@ -29,13 +32,33 @@ void main() async {
           );
         }
         User? userLogin = snapshot.data;
+
         print(userLogin);
         return GetMaterialApp(
           title: "Gate App",
-          initialRoute: userLogin != null ? Routes.HOME : Routes.LOGIN,
+          initialRoute: userLogin != null
+              ? (userRole?['role']) == "administrator"
+                  ? Routes.ADMIN_HOME
+                  : Routes.HOME
+              : Routes.LOGIN,
           getPages: AppPages.routes,
         );
       },
     ),
   );
+}
+
+Future userCheck() async {
+  String? uid;
+
+  if (FirebaseAuth.instance.currentUser == null) {
+    uid = null;
+  } else {
+    uid = FirebaseAuth.instance.currentUser!.uid;
+  }
+
+  DocumentSnapshot<Map<String, dynamic>> getUserRole =
+      await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+  return getUserRole.data();
 }

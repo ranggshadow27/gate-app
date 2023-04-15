@@ -164,11 +164,6 @@ class PageSetupController extends GetxController {
         } else {
           Get.snackbar("Error", "No action");
         }
-
-        // Get.snackbar(
-        //   positionResponse["message"],
-        //   "Lokasi saat ini : ${position.latitude} , ${position.longitude}}",
-        // );
       } else {
         Get.snackbar(
           "Error",
@@ -190,22 +185,62 @@ class PageSetupController extends GetxController {
     required String collectionString,
   }) async {
     String uid = auth.currentUser!.uid;
+    bool inArea = false;
 
     DateTime now = DateTime.now();
     int lastDay = now.day - 1;
     DateTime formatYesterday =
         DateFormat("dd-MM-yyyy").parse("${lastDay}-${now.month}-${now.year}");
-    bool inArea = false;
 
     String dateID = DateFormat("dd-MM-yyyy").format(now);
     String yesterdayID = DateFormat("dd-MM-yyyy").format(formatYesterday);
+
+    DateTime formatTodayyMd =
+        DateFormat("yyyy-MM-dd").parse("${now.year}-${now.month}-${now.day}");
+
+    DateTime formatYesterdayyMd =
+        DateFormat("yyyy-MM-dd").parse("${now.year}-${now.month}-${lastDay}");
 
     CollectionReference<Map<String, dynamic>> collectionRef = await firestore
         .collection('users')
         .doc(uid)
         .collection(collectionString);
 
-    QuerySnapshot<Map<String, dynamic>> snapshotPresence =
+    QuerySnapshot<Map<String, dynamic>> duplicateDate = await collectionRef
+        .where('date', isGreaterThanOrEqualTo: formatTodayyMd.toIso8601String())
+        .get();
+
+    QuerySnapshot<Map<String, dynamic>> yesterdayDuplicateDate =
+        await collectionRef
+            .where('date', isGreaterThan: formatYesterdayyMd.toIso8601String())
+            .where(
+                'date',
+                isLessThan: formatYesterdayyMd
+                    .add(Duration(hours: 23, minutes: 59, seconds: 59))
+                    .toIso8601String())
+            .get();
+
+    int countTodayID = duplicateDate.docs.length;
+    int countYesterdayID = yesterdayDuplicateDate.docs.length;
+
+    String duplicateDateId = "${dateID}_${countTodayID.toString()}";
+    String duplicateDateIdOut = "${dateID}_${(countTodayID - 1).toString()}";
+
+    String yDuplicateDateIdOut =
+        "${yesterdayID}_${(countYesterdayID - 1).toString()}";
+
+    for (var i = 0; i < yesterdayDuplicateDate.docs.length; i++) {
+      print("---------> ${yesterdayDuplicateDate.docs[i].id}");
+    }
+
+    print("-----------------------> ${lastDay}-${now.month}-${now.year}");
+    print("lebih dari -----------------------> $formatYesterdayyMd");
+    print(
+        "kurang dari -----------------------> ${formatYesterdayyMd.add(Duration(hours: 23, minutes: 59, seconds: 59))}");
+    print("-----------------------> $countYesterdayID");
+    print("-----------------------> $yDuplicateDateIdOut");
+
+    QuerySnapshot<Map<String, dynamic>> getAllPresence =
         await collectionRef.get();
 
     DocumentSnapshot<Map<String, dynamic>> getTodayData =
@@ -214,21 +249,8 @@ class PageSetupController extends GetxController {
     DocumentSnapshot<Map<String, dynamic>> getYesterdayData =
         await collectionRef.doc(yesterdayID).get();
 
-    print(overtimeTextC.text);
-
-    // String getMinutesNumber = getMinutesDiff.replaceAll(" Minutes", "");
-    // int convertToInt = int.parse(getMinutesNumber);
-
-    // print("This is In --------------------> $getPresenceInTime");
-    // print("This is Now --------------------> $now");
-    // print("This is Duration --------------------> $timeDiff");
-    // print("This is Duration in Minutes --------------------> $getMinutesDiff");
-    // print(
-    //     "This is Duration in Minutes but just number --------------------> ${getMinutesNumber}");
-    // print(
-    //     "This is a converted Minutes ---------------------> ${convertToInt} type is ${convertToInt.runtimeType}");
-    // print(
-    //     "Jumlah Uang Lemburan -------------------> ${(convertToInt / 60) * 150000}");
+    DocumentSnapshot<Map<String, dynamic>> getDupeYesterdayData =
+        await collectionRef.doc(yDuplicateDateIdOut).get();
 
     if (getDistance <= 100.0) {
       inArea = true;
@@ -236,8 +258,9 @@ class PageSetupController extends GetxController {
 
     print("Jaraknya ------------------------> ${getDistance} == ${inArea}");
 
-    if (snapshotPresence.docs.length == 0) {
+    if (getAllPresence.docs.length == 0) {
       //Absen Masuk Pertama Kali
+      print("//---------------->Absen Masuk Pertama Kali");
       await Get.defaultDialog(
         title: "Konfirmasi",
         middleText:
@@ -261,8 +284,12 @@ class PageSetupController extends GetxController {
       Map<String, dynamic>? lastDayData = getYesterdayData.data();
 
       if (!getYesterdayData.exists) {
+        //Data kemarin tidak ada?
         if (!getTodayData.exists) {
+          //Data hari ini tidak ada?
           //Absen Masuk Ketika Kemarin libur/tidak ada absensi.
+          print("//---------------->Masuk saat Kemarin tidak ada absensi.");
+
           await Get.defaultDialog(
             title: "Konfirmasi",
             middleText:
@@ -285,16 +312,85 @@ class PageSetupController extends GetxController {
         } else {
           Map<String, dynamic>? dataToday = getTodayData.data();
           //Sudah Absen Masuk dan Pulang
+          print("//---------------->Sudah Absen Masuk dan Pulang.");
+
           if (dataToday?["pulang"] != null) {
             //Lembur?
-            Get.snackbar("Peringatan",
-                "Anda sudah absen masuk dan pulang hari ini, apakah ingin lembur?");
+            print("//---------------->Lanjut Shift?.");
+
+            // Get.snackbar("Peringatan",
+            //     "Anda sudah absen masuk dan pulang hari ini, apakah ingin lembur?");
+
+            Map<String, dynamic>? getDuplicateData =
+                duplicateDate.docs[countTodayID - 1].data();
+
+            if (getDuplicateData['pulang'] != null) {
+              if (duplicateDate.docs.length < 3) {
+                print("//---------------->Lanjut Shift Masuk.");
+
+                await Get.defaultDialog(
+                  title: "Konfirmasi",
+                  middleText:
+                      "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk kembali?",
+                  actions: [
+                    BackButton(),
+                    ConfirmButton(
+                      type: collectionString == "presence"
+                          ? "Masuk"
+                          : "Lembur Masuk",
+                      collectionRef: collectionRef,
+                      getAddress: getAddress,
+                      getPosition: getPosition,
+                      inArea: inArea,
+                      now: now,
+                      dateID: duplicateDateId,
+                      //
+                      overtimeDesc: overtimeTextC.text,
+                    ),
+                  ],
+                );
+              } else {
+                Get.snackbar("Error",
+                    "Hari ini sudah melakukan 3 kali absensi, tidak dapat melakukan absensi kembali.");
+              }
+            } else {
+              DateTime getPresenceInTime =
+                  DateTime.parse(getDuplicateData['masuk']['datetime']);
+              Duration timeDiff = now.difference(getPresenceInTime);
+              String getMinutesDiff = "${timeDiff.inMinutes} Minutes";
+
+              print("//---------------->Lanjut Shift Pulang.");
+
+              await Get.defaultDialog(
+                title: "Konfirmasi",
+                middleText:
+                    "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
+                actions: [
+                  BackButton(),
+                  ConfirmButton(
+                    type: collectionString == "presence"
+                        ? "Pulang"
+                        : "Lembur Pulang",
+                    collectionRef: collectionRef,
+                    getAddress: getAddress,
+                    getPosition: getPosition,
+                    inArea: inArea,
+                    now: now,
+                    dateID: duplicateDateIdOut,
+                    //
+                    overtimeTotal: getMinutesDiff,
+                  ),
+                ],
+              );
+            }
           } else {
             DateTime getPresenceInTime =
                 DateTime.parse(dataToday!['masuk']['datetime']);
             Duration timeDiff = now.difference(getPresenceInTime);
             String getMinutesDiff = "${timeDiff.inMinutes} Minutes";
             //Absen Pulang Ketika Kemarin Libur/Tidak ada absensi.
+            print("//---------------->Pulang Ketika Kemarin Libur.");
+
             await Get.defaultDialog(
               title: "Konfirmasi",
               middleText:
@@ -310,7 +406,7 @@ class PageSetupController extends GetxController {
                   getPosition: getPosition,
                   inArea: inArea,
                   now: now,
-                  dateID: dateID,
+                  duplicateId: duplicateDateId,
                   //
                   overtimeTotal: getMinutesDiff,
                 ),
@@ -319,8 +415,11 @@ class PageSetupController extends GetxController {
           }
         }
       } else {
+        Map<String, dynamic> yesterdayDupeData = getDupeYesterdayData.data()!;
         if (lastDayData?["pulang"] == null) {
           //Absen Pulang saat Shift 3
+          print("//---------------->Pulang saat Shift 3.");
+
           await Get.defaultDialog(
             title: "Konfirmasi",
             middleText:
@@ -339,52 +438,39 @@ class PageSetupController extends GetxController {
             ],
           );
         } else {
-          if (!getTodayData.exists) {
-            //Absen Masuk Normal
+          if (yesterdayDupeData['pulang'] == null) {
             await Get.defaultDialog(
               title: "Konfirmasi",
               middleText:
-                  "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
+                  "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
               actions: [
                 BackButton(),
                 ConfirmButton(
-                  type:
-                      collectionString == "presence" ? "Masuk" : "Lembur Masuk",
+                  type: "Shift 3 Pulang",
                   collectionRef: collectionRef,
                   getAddress: getAddress,
                   getPosition: getPosition,
                   inArea: inArea,
                   now: now,
-                  dateID: dateID,
-                  //
-                  overtimeDesc: overtimeTextC.text,
+                  yesterdayID: yDuplicateDateIdOut,
                 ),
               ],
             );
           } else {
-            Map<String, dynamic>? dataToday = getTodayData.data();
+            if (!getTodayData.exists) {
+              //Absen Masuk Normal
+              print("//---------------->Absen Masuk Normal.");
 
-            //Sudah Absen Masuk dan Pulang
-            if (dataToday?["pulang"] != null) {
-              //Lembur?
-              Get.snackbar("Peringatan",
-                  "Anda sudah absen masuk dan pulang hari ini, apakah ingin lembur?");
-            } else {
-              DateTime getPresenceInTime =
-                  DateTime.parse(dataToday!['masuk']['datetime']);
-              Duration timeDiff = now.difference(getPresenceInTime);
-              String getMinutesDiff = "${timeDiff.inMinutes} Minutes";
-              //Absen Pulang Normal
               await Get.defaultDialog(
                 title: "Konfirmasi",
                 middleText:
-                    "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
+                    "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
                 actions: [
                   BackButton(),
                   ConfirmButton(
                     type: collectionString == "presence"
-                        ? "Pulang"
-                        : "Lembur Pulang",
+                        ? "Masuk"
+                        : "Lembur Masuk",
                     collectionRef: collectionRef,
                     getAddress: getAddress,
                     getPosition: getPosition,
@@ -392,10 +478,108 @@ class PageSetupController extends GetxController {
                     now: now,
                     dateID: dateID,
                     //
-                    overtimeTotal: getMinutesDiff,
+                    overtimeDesc: overtimeTextC.text,
                   ),
                 ],
               );
+            } else {
+              Map<String, dynamic>? dataToday = getTodayData.data();
+
+              //Sudah Absen Masuk dan Pulang
+              print("//---------------->Sudah Absen Masuk dan Pulang[2].");
+
+              if (dataToday?["pulang"] != null) {
+                //Lembur?
+                print("//---------------->Lanjut Shift[2].");
+
+                Map<String, dynamic>? getDuplicateData =
+                    duplicateDate.docs[countTodayID - 1].data();
+
+                if (getDuplicateData['pulang'] != null) {
+                  if (duplicateDate.docs.length < 3) {
+                    await Get.defaultDialog(
+                      title: "Konfirmasi",
+                      middleText:
+                          "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk kembali?",
+                      actions: [
+                        BackButton(),
+                        ConfirmButton(
+                          type: collectionString == "presence"
+                              ? "Masuk"
+                              : "Lembur Masuk",
+                          collectionRef: collectionRef,
+                          getAddress: getAddress,
+                          getPosition: getPosition,
+                          inArea: inArea,
+                          now: now,
+                          dateID: duplicateDateId,
+                          //
+                          overtimeDesc: overtimeTextC.text,
+                        ),
+                      ],
+                    );
+                  } else {
+                    Get.snackbar("Error",
+                        "Hari ini sudah melakukan 3 kali absensi, tidak dapat melakukan absensi kembali.");
+                  }
+                } else {
+                  DateTime getPresenceInTime =
+                      DateTime.parse(getDuplicateData['masuk']['datetime']);
+                  Duration timeDiff = now.difference(getPresenceInTime);
+                  String getMinutesDiff = "${timeDiff.inMinutes} Minutes";
+
+                  await Get.defaultDialog(
+                    title: "Konfirmasi",
+                    middleText:
+                        "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
+                    actions: [
+                      BackButton(),
+                      ConfirmButton(
+                        type: collectionString == "presence"
+                            ? "Pulang"
+                            : "Lembur Pulang",
+                        collectionRef: collectionRef,
+                        getAddress: getAddress,
+                        getPosition: getPosition,
+                        inArea: inArea,
+                        now: now,
+                        dateID: duplicateDateIdOut,
+                        //
+                        overtimeTotal: getMinutesDiff,
+                      ),
+                    ],
+                  );
+                }
+              } else {
+                DateTime getPresenceInTime =
+                    DateTime.parse(dataToday!['masuk']['datetime']);
+                Duration timeDiff = now.difference(getPresenceInTime);
+                String getMinutesDiff = "${timeDiff.inMinutes} Minutes";
+                //Absen Pulang Normal
+                print("//---------------->Absen Pulang Normal.");
+
+                await Get.defaultDialog(
+                  title: "Konfirmasi",
+                  middleText:
+                      "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
+                  actions: [
+                    BackButton(),
+                    ConfirmButton(
+                      type: collectionString == "presence"
+                          ? "Pulang"
+                          : "Lembur Pulang",
+                      collectionRef: collectionRef,
+                      getAddress: getAddress,
+                      getPosition: getPosition,
+                      inArea: inArea,
+                      now: now,
+                      dateID: dateID,
+                      //
+                      overtimeTotal: getMinutesDiff,
+                    ),
+                  ],
+                );
+              }
             }
           }
         }
@@ -431,6 +615,7 @@ class ConfirmButton extends StatelessWidget {
     this.yesterdayID,
     this.overtimeTotal,
     this.overtimeDesc,
+    this.duplicateId,
   }) : super(key: key);
 
   final String type;
@@ -443,95 +628,67 @@ class ConfirmButton extends StatelessWidget {
   final String? yesterdayID;
   final String? overtimeTotal;
   final String? overtimeDesc;
+  final String? duplicateId;
 
   @override
   Widget build(BuildContext context) {
+    Map<String, dynamic> queryPulang = {
+      "pulang": {
+        "datetime": now.toIso8601String(),
+        "latitude": getPosition.latitude,
+        "longitude": getPosition.longitude,
+        "address": getAddress,
+        "inArea": inArea,
+      }
+    };
+
+    Map<String, dynamic> queryMasuk = {
+      "date": now.toIso8601String(),
+      "status": "normal",
+      "masuk": {
+        "datetime": now.toIso8601String(),
+        "latitude": getPosition.latitude,
+        "longitude": getPosition.longitude,
+        "address": getAddress,
+        "inArea": inArea,
+      }
+    };
+
     return ElevatedButton(
       onPressed: type == "Pulang"
           ? () async {
-              await collectionRef.doc(dateID).update(
-                {
-                  "pulang": {
-                    "datetime": now.toIso8601String(),
-                    "latitude": getPosition.latitude,
-                    "longitude": getPosition.longitude,
-                    "address": getAddress,
-                    "inArea": inArea,
-                  }
-                },
-              );
+              await collectionRef.doc(dateID).update(queryPulang);
               Get.back();
               Get.snackbar("Berhasil", "Anda sudah melakukan absensi Pulang.");
             }
           : type == "Masuk"
               ? () async {
-                  await collectionRef.doc(dateID).set(
-                    {
-                      "date": now.toIso8601String(),
-                      "status": "normal",
-                      "masuk": {
-                        "datetime": now.toIso8601String(),
-                        "latitude": getPosition.latitude,
-                        "longitude": getPosition.longitude,
-                        "address": getAddress,
-                        "inArea": inArea,
-                      }
-                    },
-                  );
+                  await collectionRef.doc(dateID).set(queryMasuk);
                   Get.back();
                   Get.snackbar(
                       "Berhasil", "Anda sudah melakukan absensi Masuk.");
                 }
               : type == "Shift 3 Pulang"
                   ? () async {
-                      await collectionRef.doc(yesterdayID).update(
-                        {
-                          "pulang": {
-                            "datetime": now.toIso8601String(),
-                            "latitude": getPosition.latitude,
-                            "longitude": getPosition.longitude,
-                            "address": getAddress,
-                            "inArea": inArea,
-                          }
-                        },
-                      );
+                      await collectionRef.doc(yesterdayID).update(queryPulang);
                       Get.back();
                       Get.snackbar(
                           "Berhasil", "Anda sudah melakukan absensi Pulang.");
                     }
                   : type == "Lembur Masuk"
                       ? () async {
-                          await collectionRef.doc(dateID).set(
-                            {
-                              "date": now.toIso8601String(),
-                              "masuk": {
-                                "datetime": now.toIso8601String(),
-                                "latitude": getPosition.latitude,
-                                "longitude": getPosition.longitude,
-                                "address": getAddress,
-                                "inArea": inArea,
-                              },
-                              "description": overtimeDesc
-                            },
-                          );
+                          queryMasuk['description'] = overtimeDesc;
+                          await collectionRef.doc(dateID).set(queryMasuk);
                           Get.back();
                           Get.snackbar(
                               "Berhasil", "Anda sudah melakukan Lembur Masuk.");
                         }
                       : type == "Lembur Pulang"
                           ? () async {
-                              await collectionRef.doc(dateID).update(
-                                {
-                                  "pulang": {
-                                    "datetime": now.toIso8601String(),
-                                    "latitude": getPosition.latitude,
-                                    "longitude": getPosition.longitude,
-                                    "address": getAddress,
-                                    "inArea": inArea,
-                                  },
-                                  "total": overtimeTotal,
-                                },
-                              );
+                              queryPulang['total'] = overtimeTotal;
+                              await collectionRef
+                                  .doc(dateID)
+                                  .update(queryPulang);
                               Get.back();
                               Get.snackbar("Berhasil",
                                   "Anda sudah melakukan Lembur Pulang.");

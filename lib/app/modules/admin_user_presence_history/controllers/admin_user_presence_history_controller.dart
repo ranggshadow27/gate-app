@@ -2,70 +2,113 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
-import 'package:gate/app/modules/presence_history/controllers/utils.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:gate/app/modules/presence_history/controllers/utils.dart';
 
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import 'pdf_widget.dart';
+import '../../presence_history/controllers/pdf_widget.dart';
 
-class PresenceHistoryController extends GetxController {
+class AdminUserPresenceHistoryController extends GetxController {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  String? startTime;
-  String endTime = DateTime.now().toIso8601String();
-  String filterOption = "Presence";
-  bool isDescending = true;
+  String getUserUID = Get.arguments;
 
-  Future<QuerySnapshot<Map<String, dynamic>>> getUserPresenceHistory() async {
-    String uid = auth.currentUser!.uid;
+  String filterOption = "Normal Presence";
+  bool filterType = true;
+  String? startDate;
+  String endDate = DateTime.now().toIso8601String();
+  List<dynamic> dataPresence = [];
+  List<dynamic> dataOvertime = [];
+  List<dynamic> dataUser = [];
 
-    if (startTime == null) {
-      print("Ini adalah start -> $startTime");
-      print("Ini adalah end -> $endTime");
+  Future<QuerySnapshot<Map<String, dynamic>>> getUserPresenceHistory(
+    String getFilterOption,
+    bool getFilterType,
+  ) async {
+    DocumentReference<Map<String, dynamic>> documentRef =
+        firestore.collection('users').doc(getUserUID);
 
-      return await firestore
-          .collection("users")
-          .doc(uid)
-          .collection(filterOption.toLowerCase())
-          .where("date", isLessThan: endTime)
-          .orderBy("date", descending: isDescending)
+    if (startDate == null) {
+      return await documentRef
+          .collection(
+            '${getFilterOption == filterOption ? 'presence' : 'overtime'}',
+          )
+          .where('date', isLessThan: endDate)
+          .orderBy(
+            'date',
+            descending: getFilterType == filterType ? true : false,
+          )
           .get();
     } else {
-      print(startTime);
-      print(endTime);
-
-      return await firestore
-          .collection("users")
-          .doc(uid)
-          .collection(filterOption.toLowerCase())
-          .where("date", isGreaterThan: startTime)
-          .where("date", isLessThan: endTime)
-          .orderBy("date", descending: isDescending)
+      return await documentRef
+          .collection(
+            '${getFilterOption == filterOption ? 'presence' : 'overtime'}',
+          )
+          .where('date', isGreaterThan: startDate)
+          .where('date', isLessThan: endDate)
+          .orderBy(
+            'date',
+            descending: getFilterType == filterType ? true : false,
+          )
           .get();
     }
   }
 
-  void pickDate(DateTime pickStartTime, DateTime pickEndTime) {
-    startTime = pickStartTime.toIso8601String();
-    endTime = pickEndTime
-        .add(Duration(hours: 23, minutes: 59, seconds: 59))
-        .toIso8601String();
+  Future<void> getUserData() async {
+    DocumentReference<Map<String, dynamic>> documentRef =
+        firestore.collection('users').doc(getUserUID);
+
+    QuerySnapshot<Map<String, dynamic>> userPresenceData = await documentRef
+        .collection('presence')
+        .where("date", isGreaterThan: startDate)
+        .where("date", isLessThan: endDate)
+        .orderBy("date", descending: false)
+        .get();
+
+    QuerySnapshot<Map<String, dynamic>> userOvertimeData = await documentRef
+        .collection('overtime')
+        .where("date", isGreaterThan: startDate)
+        .where("date", isLessThan: endDate)
+        .orderBy("date", descending: false)
+        .get();
+
+    DocumentSnapshot<Map<String, dynamic>> getUserInfo =
+        await documentRef.get();
+
+    Map<String, dynamic>? userInfo = getUserInfo.data();
+
+    dataUser = [userInfo];
+    dataPresence = userPresenceData.docs.map((e) => e.data()).toList();
+    dataOvertime = userOvertimeData.docs.map((e) => e.data()).toList();
+  }
+
+  getDate({
+    required DateTime? getStartDate,
+    required DateTime getEndDate,
+  }) async {
+    startDate = getStartDate!.toIso8601String();
+    endDate =
+        getEndDate.add(Duration(hours: 23, minutes: 59)).toIso8601String();
+
     update();
   }
 
-  Future<void> createPDF({
-    required List<dynamic> dataPresence,
-    required List<dynamic> dataUser,
-    required List<dynamic> dataOvertime,
-  }) async {
-    Get.back();
+  String dateFormat(String inputDate) {
+    String formatDate =
+        DateFormat("EEEE, dd MMMM yyyy").format(DateTime.parse(inputDate));
+
+    return formatDate;
+  }
+
+  Future<void> createPDF() async {
+    await getUserData();
 
     if (dataPresence.length == 0) {
       Get.snackbar("Error", "Tidak ada data yang dapat di Export");
@@ -280,53 +323,5 @@ class PresenceHistoryController extends GetxController {
         ),
       ],
     );
-  }
-}
-
-class DataController extends GetxController {
-  final historyC = Get.find<PresenceHistoryController>();
-  FirebaseAuth auth = FirebaseAuth.instance;
-  var dataPresence = [].obs;
-  var dataUser = [].obs;
-  var dataOvertime = [].obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-    fetchData();
-  }
-
-  Future<void> fetchData() async {
-    String uid = auth.currentUser!.uid;
-
-    QuerySnapshot<Map<String, dynamic>> snapshotOvertime = await historyC
-        .firestore
-        .collection('users')
-        .doc(uid)
-        .collection('overtime')
-        .where("date", isGreaterThan: historyC.startTime)
-        .where("date", isLessThan: historyC.endTime)
-        .orderBy("date", descending: false)
-        .get();
-
-    QuerySnapshot<Map<String, dynamic>> snapshotPresence = await historyC
-        .firestore
-        .collection("users")
-        .doc(uid)
-        .collection("presence")
-        .where("date", isGreaterThan: historyC.startTime)
-        .where("date", isLessThan: historyC.endTime)
-        .orderBy("date", descending: false)
-        .get();
-
-    DocumentSnapshot<Map<String, dynamic>> snapshotUser =
-        await historyC.firestore.collection('users').doc(uid).get();
-
-    Map<String, dynamic>? getDataUser = snapshotUser.data();
-
-    dataUser.value = [getDataUser];
-    dataPresence.value = snapshotPresence.docs.map((e) => e.data()).toList();
-    dataOvertime.value =
-        snapshotOvertime.docs.map((data) => data.data()).toList();
   }
 }

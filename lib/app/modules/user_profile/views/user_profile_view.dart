@@ -1,4 +1,5 @@
 import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -64,6 +65,39 @@ class UserProfileView extends GetView<UserProfileController> {
                   Text("Email."),
                   Text("${userData["email"]}"),
                   SizedBox(height: 20),
+                  Obx(
+                    () {
+                      Map<String, dynamic> salaryData = controller.salaryData!;
+                      return Column(
+                        children: [
+                          controller.showSalaryInfo.isTrue
+                              ? SizedBox(
+                                  child: Column(
+                                    children: [
+                                      Divider(),
+                                      Text("Gapok : ${salaryData['main']}"),
+                                      Text("UM : ${salaryData['daily']}"),
+                                      Text(
+                                          "Tunjangan : ${salaryData['allowance']}"),
+                                    ],
+                                  ),
+                                )
+                              : SizedBox(),
+                          TextButton(
+                            onPressed: () async {
+                              await controller.getSalaryData();
+                              controller.showSalaryInfo.toggle();
+                            },
+                            child: Text(
+                              controller.showSalaryInfo.isFalse
+                                  ? "Show Salary Info"
+                                  : "Hide Salary Info",
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                   ElevatedButton(
                     onPressed: () => Get.toNamed(
                       Routes.UPDATE_USER_PROFILE,
