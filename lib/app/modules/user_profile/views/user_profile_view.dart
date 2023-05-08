@@ -65,36 +65,47 @@ class UserProfileView extends GetView<UserProfileController> {
                   Text("Email."),
                   Text("${userData["email"]}"),
                   SizedBox(height: 20),
-                  Obx(
-                    () {
-                      Map<String, dynamic> salaryData = controller.salaryData!;
-                      return Column(
-                        children: [
-                          controller.showSalaryInfo.isTrue
-                              ? SizedBox(
-                                  child: Column(
-                                    children: [
-                                      Divider(),
-                                      Text("Gapok : ${salaryData['main']}"),
-                                      Text("UM : ${salaryData['daily']}"),
-                                      Text(
-                                          "Tunjangan : ${salaryData['allowance']}"),
-                                    ],
-                                  ),
-                                )
-                              : SizedBox(),
-                          TextButton(
-                            onPressed: () async {
-                              await controller.getSalaryData();
-                              controller.showSalaryInfo.toggle();
-                            },
-                            child: Text(
-                              controller.showSalaryInfo.isFalse
-                                  ? "Show Salary Info"
-                                  : "Hide Salary Info",
-                            ),
-                          ),
-                        ],
+                  FutureBuilder(
+                    future: controller.getSalaryData(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      Map<String, dynamic> salaryData = snapshot.data!.data()!;
+                      return Obx(
+                        () {
+                          return Column(
+                            children: [
+                              controller.showSalaryInfo.isTrue
+                                  ? SizedBox(
+                                      child: Column(
+                                        children: [
+                                          Divider(),
+                                          Text("Gapok : ${salaryData['main']}"),
+                                          Text("UM : ${salaryData['daily']}"),
+                                          Text(
+                                              "Tunjangan : ${salaryData['allowance']}"),
+                                        ],
+                                      ),
+                                    )
+                                  : SizedBox(),
+                              TextButton(
+                                onPressed: () async {
+                                  await controller.getSalaryData();
+                                  controller.showSalaryInfo.toggle();
+                                },
+                                child: Text(
+                                  controller.showSalaryInfo.isFalse
+                                      ? "Show Salary Info"
+                                      : "Hide Salary Info",
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       );
                     },
                   ),
@@ -122,31 +133,41 @@ class UserProfileView extends GetView<UserProfileController> {
           )
         ],
       ),
-      bottomNavigationBar: BottomBarCreative(
-        items: [
-          TabItem(
-            icon: Icons.home,
+      bottomNavigationBar: Obx(
+        () => BottomBarCreative(
+          items: [
+            TabItem(
+              icon: Icons.home,
+            ),
+            TabItem(
+              icon: Icons.history,
+            ),
+            TabItem(
+              icon: pageController.isLoading.isFalse
+                  ? Icons.favorite_border
+                  : Icons.waving_hand,
+            ),
+            TabItem(
+              icon: Icons.file_copy,
+            ),
+            TabItem(
+              icon: Icons.account_box,
+            ),
+          ],
+          iconSize: 30,
+          backgroundColor: Colors.green.withOpacity(0.21),
+          color: Colors.red,
+          colorSelected: Colors.white,
+          indexSelected: pageController.initialPage.value,
+          // isFloating: true,
+          highlightStyle: const HighlightStyle(
+            sizeLarge: true,
+            background: Colors.red,
+            elevation: 3,
+            isHexagon: true,
           ),
-          TabItem(
-            icon: Icons.favorite_border,
-          ),
-          TabItem(
-            icon: Icons.account_box,
-          ),
-        ],
-        iconSize: 30,
-        backgroundColor: Colors.green.withOpacity(0.21),
-        color: Colors.red,
-        colorSelected: Colors.white,
-        indexSelected: pageController.initialPage.value,
-        // isFloating: true,
-        highlightStyle: const HighlightStyle(
-          sizeLarge: true,
-          background: Colors.red,
-          elevation: 3,
-          isHexagon: true,
+          onTap: (int index) => pageController.visitPage(index),
         ),
-        onTap: (int index) => pageController.visitPage(index),
       ),
     );
   }

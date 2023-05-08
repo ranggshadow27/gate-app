@@ -16,6 +16,7 @@ class UpdateUserProfileController extends GetxController {
   TextEditingController nipC = TextEditingController();
   TextEditingController gradeC = TextEditingController();
   TextEditingController fullnameC = TextEditingController();
+
   RxBool isLoading = false.obs;
   RxBool isAvatarDelete = false.obs;
 
@@ -36,6 +37,7 @@ class UpdateUserProfileController extends GetxController {
     String ext = image!.name.split(".").last;
 
     await storage.ref('users_avatar/$uid/${uid}_av.$ext').putFile(file);
+
     String imageURL =
         await storage.ref('users_avatar/$uid/${uid}_av.$ext').getDownloadURL();
 

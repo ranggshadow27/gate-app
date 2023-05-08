@@ -26,19 +26,32 @@ class PageSetupController extends GetxController {
         break;
 
       case 1:
-        Get.dialog(
-          Dialog(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
-        );
-        await doPresence(presenceType: "normal");
+        Get.toNamed(Routes.PRESENCE_HISTORY_DETAILS);
         break;
 
       case 2:
+        if (i == 3) {
+          print("ini halaman report");
+        } else {
+          Get.dialog(
+            Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          );
+          await doPresence(presenceType: "normal");
+        }
+
+        break;
+
+      case 3:
+        Get.offAllNamed(Routes.REPORT);
+        break;
+
+      case 4:
         Get.offAllNamed(Routes.USER_PROFILE);
         break;
 
@@ -318,9 +331,6 @@ class PageSetupController extends GetxController {
             //Lembur?
             print("//---------------->Lanjut Shift?.");
 
-            // Get.snackbar("Peringatan",
-            //     "Anda sudah absen masuk dan pulang hari ini, apakah ingin lembur?");
-
             Map<String, dynamic>? getDuplicateData =
                 duplicateDate.docs[countTodayID - 1].data();
 
@@ -415,7 +425,7 @@ class PageSetupController extends GetxController {
           }
         }
       } else {
-        Map<String, dynamic> yesterdayDupeData = getDupeYesterdayData.data()!;
+        Map<String, dynamic>? yesterdayDupeData = getDupeYesterdayData.data();
         if (lastDayData?["pulang"] == null) {
           //Absen Pulang saat Shift 3
           print("//---------------->Pulang saat Shift 3.");
@@ -438,25 +448,7 @@ class PageSetupController extends GetxController {
             ],
           );
         } else {
-          if (yesterdayDupeData['pulang'] == null) {
-            await Get.defaultDialog(
-              title: "Konfirmasi",
-              middleText:
-                  "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-              actions: [
-                BackButton(),
-                ConfirmButton(
-                  type: "Shift 3 Pulang",
-                  collectionRef: collectionRef,
-                  getAddress: getAddress,
-                  getPosition: getPosition,
-                  inArea: inArea,
-                  now: now,
-                  yesterdayID: yDuplicateDateIdOut,
-                ),
-              ],
-            );
-          } else {
+          if (!getDupeYesterdayData.exists) {
             if (!getTodayData.exists) {
               //Absen Masuk Normal
               print("//---------------->Absen Masuk Normal.");
@@ -580,6 +572,26 @@ class PageSetupController extends GetxController {
                   ],
                 );
               }
+            }
+          } else {
+            if (yesterdayDupeData?['pulang'] == null) {
+              await Get.defaultDialog(
+                title: "Konfirmasi",
+                middleText:
+                    "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
+                actions: [
+                  BackButton(),
+                  ConfirmButton(
+                    type: "Shift 3 Pulang",
+                    collectionRef: collectionRef,
+                    getAddress: getAddress,
+                    getPosition: getPosition,
+                    inArea: inArea,
+                    now: now,
+                    yesterdayID: yDuplicateDateIdOut,
+                  ),
+                ],
+              );
             }
           }
         }

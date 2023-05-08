@@ -2,6 +2,9 @@ import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gate/app/components/colors.dart';
+import 'package:gate/app/components/fonts.dart';
+import 'package:gate/app/components/widgets.dart';
 import 'package:gate/app/controllers/page_setup_controller.dart';
 
 import 'package:get/get.dart';
@@ -15,6 +18,7 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // backgroundColor: bgColor,
       appBar: AppBar(
         title: Text('HomeView'),
         centerTitle: true,
@@ -24,6 +28,17 @@ class HomeView extends GetView<HomeController> {
         children: [
           Column(
             children: [
+              RGateButton(
+                color: redColor,
+                text: RText(
+                  text: "Sign Out",
+                  textStyle: interBold,
+                ),
+                height: 60,
+                width: Get.width,
+                callback: () {},
+              ),
+              SizedBox(height: 20),
               StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                 stream: controller.getUserData(),
                 builder: (context, snapshot) {
@@ -96,58 +111,7 @@ class HomeView extends GetView<HomeController> {
                         width: MediaQuery.of(context).size.width,
                         child: ElevatedButton(
                           onPressed: () => Get.dialog(
-                            Dialog(
-                              child: Container(
-                                padding: EdgeInsets.all(30),
-                                height: Get.height * .4,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text("Keterangan Lembur"),
-                                    SizedBox(height: 20),
-                                    TextField(
-                                      controller: pageController.overtimeTextC,
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(),
-                                        hintText: "Keterangan Lembur",
-                                      ),
-                                    ),
-                                    SizedBox(height: 20),
-                                    Obx(
-                                      () {
-                                        return ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            fixedSize: Size(Get.width, 40),
-                                          ),
-                                          onPressed: () {
-                                            if (pageController
-                                                .isLoading.isFalse) {
-                                              Get.dialog(
-                                                Dialog(
-                                                  backgroundColor:
-                                                      Colors.transparent,
-                                                  elevation: 0,
-                                                  child: Center(
-                                                      child:
-                                                          CircularProgressIndicator()),
-                                                ),
-                                              );
-                                              pageController.doPresence(
-                                                  presenceType: "overtime");
-                                            }
-                                          },
-                                          child: Text(
-                                            pageController.isLoading.isFalse
-                                                ? "Submit Lembur"
-                                                : "Loading ..",
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                            ROvertimeDialog(pageController: pageController),
                           ),
                           child: Icon(Icons.vaccines),
                         ),
@@ -321,16 +285,21 @@ class HomeView extends GetView<HomeController> {
               icon: Icons.home,
             ),
             TabItem(
+              icon: Icons.history,
+            ),
+            TabItem(
               icon: pageController.isLoading.isFalse
                   ? Icons.favorite_border
                   : Icons.waving_hand,
+            ),
+            TabItem(
+              icon: Icons.file_copy,
             ),
             TabItem(
               icon: Icons.account_box,
             ),
           ],
           iconSize: 30,
-
           backgroundColor: Colors.green.withOpacity(0.21),
           color: Colors.red,
           colorSelected: Colors.white,
@@ -343,6 +312,68 @@ class HomeView extends GetView<HomeController> {
             isHexagon: true,
           ),
           onTap: (int index) => pageController.visitPage(index),
+        ),
+      ),
+    );
+  }
+}
+
+class ROvertimeDialog extends StatelessWidget {
+  const ROvertimeDialog({
+    Key? key,
+    required this.pageController,
+  }) : super(key: key);
+
+  final PageSetupController pageController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Container(
+        padding: EdgeInsets.all(30),
+        height: Get.height * .4,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Keterangan Lembur"),
+            SizedBox(height: 20),
+            TextField(
+              controller: pageController.overtimeTextC,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: "Keterangan Lembur",
+              ),
+            ),
+            SizedBox(height: 20),
+            Obx(
+              () {
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    fixedSize: Size(Get.width, 40),
+                  ),
+                  onPressed: () {
+                    if (pageController.isLoading.isFalse) {
+                      Get.dialog(
+                        Dialog(
+                          backgroundColor: Colors.transparent,
+                          elevation: 0,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      );
+                      pageController.doPresence(presenceType: "overtime");
+                    }
+                  },
+                  child: Text(
+                    pageController.isLoading.isFalse
+                        ? "Submit Lembur"
+                        : "Loading ..",
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

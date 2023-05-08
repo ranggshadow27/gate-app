@@ -24,6 +24,14 @@ import 'package:gate/app/modules/presence_details/bindings/presence_details_bind
 import 'package:gate/app/modules/presence_details/views/presence_details_view.dart';
 import 'package:gate/app/modules/presence_history/bindings/presence_history_binding.dart';
 import 'package:gate/app/modules/presence_history/views/presence_history_view.dart';
+import 'package:gate/app/modules/report/bindings/report_binding.dart';
+import 'package:gate/app/modules/report/views/report_view.dart';
+import 'package:gate/app/modules/report_add/bindings/report_add_binding.dart';
+import 'package:gate/app/modules/report_add/views/report_add_view.dart';
+import 'package:gate/app/modules/report_detail/bindings/report_detail_binding.dart';
+import 'package:gate/app/modules/report_detail/views/report_detail_view.dart';
+import 'package:gate/app/modules/report_update/bindings/report_update_binding.dart';
+import 'package:gate/app/modules/report_update/views/report_update_view.dart';
 import 'package:gate/app/modules/reset_default_password/bindings/reset_default_password_binding.dart';
 import 'package:gate/app/modules/reset_default_password/views/reset_default_password_view.dart';
 import 'package:gate/app/modules/update_user_password/bindings/update_user_password_binding.dart';
@@ -122,6 +130,26 @@ class AppPages {
       name: _Paths.ADMIN_USER_SALARY,
       page: () => AdminUserSalaryView(),
       binding: AdminUserSalaryBinding(),
+    ),
+    GetPage(
+      name: _Paths.REPORT,
+      page: () => ReportView(),
+      binding: ReportBinding(),
+    ),
+    GetPage(
+      name: _Paths.REPORT_ADD,
+      page: () => ReportAddView(),
+      binding: ReportAddBinding(),
+    ),
+    GetPage(
+      name: _Paths.REPORT_DETAIL,
+      page: () => ReportDetailView(),
+      binding: ReportDetailBinding(),
+    ),
+    GetPage(
+      name: _Paths.REPORT_UPDATE,
+      page: () => ReportUpdateView(),
+      binding: ReportUpdateBinding(),
     ),
   ];
 }

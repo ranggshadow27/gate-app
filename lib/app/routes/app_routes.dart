@@ -20,6 +20,10 @@ abstract class Routes {
   static const ADMIN_VIEW_USERS = _Paths.ADMIN_VIEW_USERS;
   static const ADMIN_USER_PRESENCE_HISTORY = _Paths.ADMIN_USER_PRESENCE_HISTORY;
   static const ADMIN_USER_SALARY = _Paths.ADMIN_USER_SALARY;
+  static const REPORT = _Paths.REPORT;
+  static const REPORT_ADD = _Paths.REPORT_ADD;
+  static const REPORT_DETAIL = _Paths.REPORT_DETAIL;
+  static const REPORT_UPDATE = _Paths.REPORT_UPDATE;
 }
 
 abstract class _Paths {
@@ -39,4 +43,8 @@ abstract class _Paths {
   static const ADMIN_VIEW_USERS = '/admin-view-users';
   static const ADMIN_USER_PRESENCE_HISTORY = '/admin-user-presence-history';
   static const ADMIN_USER_SALARY = '/admin-user-salary';
+  static const REPORT = '/report';
+  static const REPORT_ADD = '/report-add';
+  static const REPORT_DETAIL = '/report-detail';
+  static const REPORT_UPDATE = '/report-update';
 }

@@ -92,128 +92,130 @@ class PresenceHistoryController extends GetxController {
 
       pdf.addPage(
         pw.MultiPage(
-          footer: (context) => pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: pw.CrossAxisAlignment.center,
-            children: [
-              RFooterPage(
-                dataUsers: dataUser,
-                title: "Penerima Tugas,",
-                dataValue: '${dataUser[0]['fullname']}',
-                grade: "Gateway Operator",
-                font: myFonts['bold'],
-              ),
-              RFooterPage(
-                dataUsers: dataUser,
-                title: "Pemberi Tugas,",
-                dataValue: "Sifaudin",
-                grade: "GO Supervisor",
-                font: myFonts['bold'],
-              ),
-              RFooterPage(
-                dataUsers: dataUser,
-                title: "Menyetujui,",
-                dataValue: "Eko Cahyo P.",
-                grade: "Gateway Manager",
-                font: myFonts['bold'],
-              ),
-            ],
-          ),
+          footer: (pw.Context context) {
+            // if (context.pageNumber < context.pagesCount) {
+            //   return pw.SizedBox();
+            // }
+
+            return pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                RFooterPage(
+                  dataUsers: dataUser,
+                  title: "Penerima Tugas,",
+                  dataValue: '${dataUser[0]['fullname']}',
+                  grade: "Gateway Operator",
+                  font: myFonts['bold'],
+                ),
+                RFooterPage(
+                  dataUsers: dataUser,
+                  title: "Pemberi Tugas,",
+                  dataValue: "Sifaudin",
+                  grade: "GO Supervisor",
+                  font: myFonts['bold'],
+                ),
+                RFooterPage(
+                  dataUsers: dataUser,
+                  title: "Menyetujui,",
+                  dataValue: "Eko Cahyo P.",
+                  grade: "Gateway Manager",
+                  font: myFonts['bold'],
+                ),
+              ],
+            );
+          },
           pageFormat: PdfPageFormat.a4,
           build: (pw.Context context) {
             return [
-              pw.Stack(
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  pw.Row(
                     children: [
-                      pw.Row(
-                        children: [
-                          pw.Expanded(
-                            flex: 1,
-                            child: pw.Container(
-                              width: 80,
-                              child: pw.Image(
-                                pw.MemoryImage(image),
-                                fit: pw.BoxFit.fitWidth,
-                              ),
-                            ),
+                      pw.Expanded(
+                        flex: 1,
+                        child: pw.Container(
+                          width: 80,
+                          child: pw.Image(
+                            pw.MemoryImage(image),
+                            fit: pw.BoxFit.fitWidth,
                           ),
-                          pw.Spacer(flex: 1),
-                          pw.Expanded(
-                            flex: 2,
-                            child: pw.Text(
-                              "SURAT PERINTAH LEMBUR",
-                              style: pw.TextStyle(
-                                font: robotoBoldFont,
-                                fontSize: 12,
-                                decoration: pw.TextDecoration.underline,
-                              ),
-                            ),
+                        ),
+                      ),
+                      pw.Spacer(flex: 1),
+                      pw.Expanded(
+                        flex: 2,
+                        child: pw.Text(
+                          "SURAT PERINTAH LEMBUR",
+                          style: pw.TextStyle(
+                            font: robotoBoldFont,
+                            fontSize: 12,
+                            decoration: pw.TextDecoration.underline,
                           ),
-                          pw.Spacer(flex: 2),
-                        ],
+                        ),
                       ),
-                      RtitleRow(
-                        dataUsers: dataUser,
-                        text: 'Name',
-                        dataValue: 'fullname',
-                        font: myFonts,
-                      ),
-                      RtitleRow(
-                        dataUsers: dataUser,
-                        text: 'NIP',
-                        dataValue: 'nip',
-                        font: myFonts,
-                      ),
-                      RtitleRow(
-                        dataUsers: dataUser,
-                        text: 'Jabatan',
-                        dataValue: 'grade',
-                        font: myFonts,
-                      ),
-                      RtitleRow(
-                        dataUsers: dataUser,
-                        text: 'Divisi/Departement',
-                        dataValue: 'createdAt',
-                        font: myFonts,
-                      ),
-                      RtitleRow(
-                        dataUsers: dataUser,
-                        text: 'Lokasi Kerja',
-                        dataValue: 'address',
-                        font: myFonts,
-                      ),
-                      pw.SizedBox(height: 10),
-                      buildTable(
-                        tableType: "Presence",
-                        dataValue: dataPresence,
-                        font: myFonts,
-                      ),
-                      dataOvertime.isEmpty || dataOvertime.length == 0
-                          ? pw.SizedBox()
-                          : pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.SizedBox(height: 10),
-                                pw.Text(
-                                  "Overtime",
-                                  style: pw.TextStyle(
-                                    font: myFonts['bold'],
-                                    fontSize: 10,
-                                  ),
-                                ),
-                                pw.SizedBox(height: 4),
-                                buildTable(
-                                  tableType: "Overtime",
-                                  dataValue: dataOvertime,
-                                  font: myFonts,
-                                ),
-                              ],
-                            ),
-                      pw.SizedBox(height: 10),
+                      pw.Spacer(flex: 2),
                     ],
                   ),
+                  RtitleRow(
+                    dataUsers: dataUser,
+                    text: 'Name',
+                    dataValue: 'fullname',
+                    font: myFonts,
+                  ),
+                  RtitleRow(
+                    dataUsers: dataUser,
+                    text: 'NIP',
+                    dataValue: 'nip',
+                    font: myFonts,
+                  ),
+                  RtitleRow(
+                    dataUsers: dataUser,
+                    text: 'Jabatan',
+                    dataValue: 'grade',
+                    font: myFonts,
+                  ),
+                  RtitleRow(
+                    dataUsers: dataUser,
+                    text: 'Divisi/Departement',
+                    dataValue: 'createdAt',
+                    font: myFonts,
+                  ),
+                  RtitleRow(
+                    dataUsers: dataUser,
+                    text: 'Lokasi Kerja',
+                    dataValue: 'address',
+                    font: myFonts,
+                  ),
+                  pw.SizedBox(height: 10),
+                  buildTable(
+                    tableType: "Presence",
+                    dataValue: dataPresence,
+                    font: myFonts,
+                  ),
+                  dataOvertime.isEmpty || dataOvertime.length == 0
+                      ? pw.SizedBox()
+                      : pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.SizedBox(height: 10),
+                            pw.Text(
+                              "Overtime",
+                              style: pw.TextStyle(
+                                font: myFonts['bold'],
+                                fontSize: 10,
+                              ),
+                            ),
+                            pw.SizedBox(height: 4),
+                            buildTable(
+                              tableType: "Overtime",
+                              dataValue: dataOvertime,
+                              font: myFonts,
+                            ),
+                          ],
+                        ),
+                  pw.SizedBox(height: 10),
                 ],
               ),
             ];

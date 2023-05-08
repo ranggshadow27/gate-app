@@ -18,12 +18,14 @@ dependencies:
   geolocator: 9.0.2
   geocoding: 2.1.0
   syncfusion_flutter_datepicker: 20.3.60
-  syncfusion_flutter_pdf: 20.3.60
   path_provider: 2.0.14
   open_file: 3.2.1
   pdf: 3.10.1
   google_fonts: 4.0.3
   dropdown_search: 5.0.0
+  dio: 5.1.1
+  permission_handler: 10.2.0
+  image_downloader: 0.31.0
   flutter: 
     sdk: flutter
 

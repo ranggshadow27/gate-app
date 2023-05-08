@@ -5,6 +5,7 @@ import 'package:gate/app/controllers/page_setup_controller.dart';
 
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'firebase_options.dart';
 
 import 'app/routes/app_pages.dart';
@@ -14,6 +15,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await Permission.storage.request();
 
   Map<String, dynamic>? userRole = await userCheck();
   final pageController = Get.put(PageSetupController(), permanent: true);
