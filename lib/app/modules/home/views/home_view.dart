@@ -1,15 +1,19 @@
 import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gate/app/components/colors.dart';
 import 'package:gate/app/components/fonts.dart';
-import 'package:gate/app/components/widgets.dart';
+import 'package:gate/app/components/widgets/svgicon.dart';
 import 'package:gate/app/controllers/page_setup_controller.dart';
 
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import '../../../components/icon_data.dart';
+import '../../../components/widgets/bottom_navigation.dart';
+import '../../../components/widgets/button.dart';
+import '../../../components/widgets/text_widget.dart';
 import '../../../routes/app_pages.dart';
 import '../controllers/home_controller.dart';
 
@@ -28,16 +32,27 @@ class HomeView extends GetView<HomeController> {
         children: [
           Column(
             children: [
-              RGateButton(
+              RButton(
                 color: redColor,
-                text: RText(
-                  text: "Sign Out",
-                  textStyle: interBold,
-                ),
+                text: "SignOut",
                 height: 60,
                 width: Get.width,
-                callback: () {},
+                callback: () {
+                  pageController.getDeviceInfo();
+                },
               ),
+              SizedBox(height: 20),
+              RButton(
+                color: greenColor,
+                text: "PickI ..",
+                height: 60,
+                width: Get.width,
+                callback: () async {
+                  // controller.pickImage();
+                  await pageController.getNetworkTime();
+                },
+              ),
+              SizedBox(height: 20),
               SizedBox(height: 20),
               StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                 stream: controller.getUserData(),
@@ -56,8 +71,7 @@ class HomeView extends GetView<HomeController> {
 
                   Map<String, dynamic> userData = snapshot.data!.data()!;
 
-                  String defaultAvatar =
-                      "https://ui-avatars.com/api/?name=${userData['fullname']}";
+                  String defaultAvatar = "https://ui-avatars.com/api/?name=${userData['fullname']}";
 
                   return Column(
                     children: [
@@ -66,9 +80,7 @@ class HomeView extends GetView<HomeController> {
                           height: 80,
                           width: 80,
                           child: Image.network(
-                            userData['avatar'] != null
-                                ? '${userData['avatar']}'
-                                : defaultAvatar,
+                            userData['avatar'] != null ? '${userData['avatar']}' : defaultAvatar,
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -123,6 +135,13 @@ class HomeView extends GetView<HomeController> {
                           child: Icon(Icons.sticky_note_2_outlined),
                         ),
                       ),
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        child: ElevatedButton(
+                          onPressed: () => Get.toNamed(Routes.DISPENSATION),
+                          child: Icon(Icons.add),
+                        ),
+                      ),
                     ],
                   );
                 },
@@ -131,15 +150,13 @@ class HomeView extends GetView<HomeController> {
               StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                   stream: controller.getUserTodayPresence(),
                   builder: (context, snapshotTodayPresence) {
-                    if (snapshotTodayPresence.connectionState ==
-                        ConnectionState.waiting) {
+                    if (snapshotTodayPresence.connectionState == ConnectionState.waiting) {
                       return Center(
                         child: CircularProgressIndicator(),
                       );
                     }
 
-                    Map<String, dynamic>? getTodayData =
-                        snapshotTodayPresence.data?.data();
+                    Map<String, dynamic>? getTodayData = snapshotTodayPresence.data?.data();
 
                     return Row(
                       children: [
@@ -156,8 +173,8 @@ class HomeView extends GetView<HomeController> {
                               Text("Masuk"),
                               Text(getTodayData?['masuk'] == null
                                   ? "-"
-                                  : DateFormat("hh:mm a").format(DateTime.parse(
-                                      getTodayData!['masuk']['datetime']))),
+                                  : DateFormat("hh:mm a")
+                                      .format(DateTime.parse(getTodayData!['masuk']['datetime']))),
                             ],
                           ),
                         ),
@@ -175,8 +192,8 @@ class HomeView extends GetView<HomeController> {
                               Text("Pulang"),
                               Text(getTodayData?['pulang'] == null
                                   ? "-"
-                                  : DateFormat("hh:mm a").format(DateTime.parse(
-                                      getTodayData!['pulang']['datetime']))),
+                                  : DateFormat("hh:mm a")
+                                      .format(DateTime.parse(getTodayData!['pulang']['datetime']))),
                             ],
                           ),
                         ),
@@ -194,13 +211,11 @@ class HomeView extends GetView<HomeController> {
               StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: controller.getUserHistoryPresence(),
                   builder: (context, snapshotHistory) {
-                    if (snapshotHistory.connectionState ==
-                        ConnectionState.waiting) {
+                    if (snapshotHistory.connectionState == ConnectionState.waiting) {
                       return Center(child: Text("Memuat data.."));
                     }
 
-                    if (snapshotHistory.data?.docs.length == 0 ||
-                        snapshotHistory.data == null) {
+                    if (snapshotHistory.data?.docs.length == 0 || snapshotHistory.data == null) {
                       return Center(child: Text("Belum ada History absensi"));
                     }
 
@@ -239,8 +254,7 @@ class HomeView extends GetView<HomeController> {
                                     Row(
                                       children: [
                                         Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text("Masuk"),
                                             SizedBox(height: 4),
@@ -252,8 +266,7 @@ class HomeView extends GetView<HomeController> {
                                         ),
                                         Spacer(),
                                         Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
+                                          crossAxisAlignment: CrossAxisAlignment.end,
                                           children: [
                                             Text("Pulang"),
                                             SizedBox(height: 4),
@@ -278,42 +291,7 @@ class HomeView extends GetView<HomeController> {
           ),
         ],
       ),
-      bottomNavigationBar: Obx(
-        () => BottomBarCreative(
-          items: [
-            TabItem(
-              icon: Icons.home,
-            ),
-            TabItem(
-              icon: Icons.history,
-            ),
-            TabItem(
-              icon: pageController.isLoading.isFalse
-                  ? Icons.favorite_border
-                  : Icons.waving_hand,
-            ),
-            TabItem(
-              icon: Icons.file_copy,
-            ),
-            TabItem(
-              icon: Icons.account_box,
-            ),
-          ],
-          iconSize: 30,
-          backgroundColor: Colors.green.withOpacity(0.21),
-          color: Colors.red,
-          colorSelected: Colors.white,
-          indexSelected: pageController.initialPage.value,
-          // isFloating: true,
-          highlightStyle: const HighlightStyle(
-            sizeLarge: true,
-            background: Colors.red,
-            elevation: 3,
-            isHexagon: true,
-          ),
-          onTap: (int index) => pageController.visitPage(index),
-        ),
-      ),
+      bottomNavigationBar: RBottomNavigation(),
     );
   }
 }
@@ -366,9 +344,7 @@ class ROvertimeDialog extends StatelessWidget {
                     }
                   },
                   child: Text(
-                    pageController.isLoading.isFalse
-                        ? "Submit Lembur"
-                        : "Loading ..",
+                    pageController.isLoading.isFalse ? "Submit Lembur" : "Loading ..",
                   ),
                 );
               },
@@ -393,11 +369,9 @@ class PresenceText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      getHistoryData[presence]?['datetime'] == "" ||
-              getHistoryData[presence]?['datetime'] == null
+      getHistoryData[presence]?['datetime'] == "" || getHistoryData[presence]?['datetime'] == null
           ? "-"
-          : DateFormat("hh:mm a")
-              .format(DateTime.parse(getHistoryData[presence]!['datetime'])),
+          : DateFormat("hh:mm a").format(DateTime.parse(getHistoryData[presence]!['datetime'])),
     );
   }
 }

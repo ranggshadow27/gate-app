@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gate/app/components/fonts.dart';
 import 'package:gate/app/controllers/page_setup_controller.dart';
 
 import 'package:get/get.dart';

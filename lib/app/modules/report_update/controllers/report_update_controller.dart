@@ -4,11 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as f;
 import 'package:flutter/material.dart';
+import 'package:gate/app/components/widgets/custom_snackbar.dart';
 import 'package:gate/app/modules/report_add/controllers/report_add_controller.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
-
-import '../../../routes/app_pages.dart';
+import 'package:ntp/ntp.dart';
 
 class ReportUpdateController extends GetxController {
   final addImageC = Get.put(ReportAddController());
@@ -22,12 +21,12 @@ class ReportUpdateController extends GetxController {
   TextEditingController subjectC = TextEditingController();
   TextEditingController descriptionC = TextEditingController();
 
-  DateTime now = DateTime.now();
   String? reportType;
   String? reportCategory;
   String? userName;
 
   RxBool isUpdate = false.obs;
+  RxBool isLoading = false.obs;
 
   Future<Map<String, dynamic>?> getCurrentImage() async {
     String reportID = reportData['reportID'];
@@ -42,25 +41,24 @@ class ReportUpdateController extends GetxController {
     Map<String, dynamic>? getImage = await getCurrentImage();
 
     print(getImage);
+    print("Apakah adaaa ? ----------> ${getImage?['images']}");
 
     int addedImage = addImageC.imgs.length;
     String reportID = reportData['reportID'];
 
     List allImageData = [];
 
-    if (getImage!['images'].length != 0) {
-      for (var i = 0; i < getImage['images'].length; i++) {
-        allImageData.add({
-          'name': getImage['images'][i]['name'],
-          'url': getImage['images'][i]['url']
-        });
+    if (getImage?['images'] != null) {
+      for (var i = 0; i < getImage!['images'].length; i++) {
+        allImageData
+            .add({'name': getImage['images'][i]['name'], 'url': getImage['images'][i]['url']});
       }
 
       for (var i = 0; i < addedImage; i++) {
         File file = File(addImageC.imgs[i].path);
 
-        f.Reference storageRef = await storage
-            .ref('report_images/$reportID/${addImageC.imgs[i].name}');
+        f.Reference storageRef =
+            await storage.ref('report_images/$reportID/${addImageC.imgs[i].name}');
 
         await storageRef.putFile(file);
         String imageUrl = await storageRef.getDownloadURL();
@@ -75,8 +73,8 @@ class ReportUpdateController extends GetxController {
         updateData.addAll({'images': []});
         File file = File(addImageC.imgs[i].path);
 
-        f.Reference storageRef = await storage
-            .ref('report_images/$reportID/${addImageC.imgs[i].name}');
+        f.Reference storageRef =
+            await storage.ref('report_images/$reportID/${addImageC.imgs[i].name}');
 
         await storageRef.putFile(file);
         String imageUrl = await storageRef.getDownloadURL();
@@ -90,36 +88,44 @@ class ReportUpdateController extends GetxController {
   }
 
   updateReport() async {
-    String reportID = reportData['reportID'];
-    userName = await getActiveUser();
+    try {
+      isLoading.value = true;
+      DateTime now = await NTP.now(
+        lookUpAddress: "time.windows.com",
+        timeout: Duration(seconds: 5),
+      );
 
-    Map<String, dynamic> updateData = {
-      "subject": subjectC.text,
-      "description": descriptionC.text,
-      "type": reportType == null ? reportData['type'] : reportType,
-      "category":
-          reportCategory == null ? reportData['category'] : reportCategory,
-      "updateAt": now.toIso8601String(),
-      "updateBy": userName,
-    };
+      String reportID = reportData['reportID'];
+      userName = await getActiveUser();
 
-    if (addImageC.imgs.isNotEmpty || addImageC.images != null) {
-      await updateImages(updateData);
-      print("Hasil dari update data dijalankan");
+      Map<String, dynamic> updateData = {
+        "subject": subjectC.text,
+        "description": descriptionC.text,
+        "type": reportType == null ? reportData['type'] : reportType,
+        "category": reportCategory == null ? reportData['category'] : reportCategory,
+        "updateAt": now.toIso8601String(),
+        "updateBy": userName,
+      };
+
+      if (addImageC.imgs.isNotEmpty || addImageC.images != null) {
+        await updateImages(updateData);
+        print("Hasil dari update data dijalankan");
+      }
+
+      print("Hasil dari update data tanpa img");
+
+      Get.back();
+      addImageC.images = null;
+      addImageC.imgs = [];
+
+      await firestore.collection('operational_report').doc(reportID).update(updateData);
+
+      Get.showSnackbar(buildSnackSuccess("Report ID : ${reportID} updated successfully"));
+    } catch (e) {
+      Get.showSnackbar(buildSnackError("Failed to Update Report, err: $e"));
+    } finally {
+      isLoading.value = false;
     }
-
-    print("Hasil dari update data tanpa img");
-
-    Get.back();
-    addImageC.images = null;
-    addImageC.imgs = [];
-
-    await firestore
-        .collection('operational_report')
-        .doc(reportID)
-        .update(updateData);
-
-    Get.snackbar("Berhasil", "Report ID : ${reportID} berhasil diperbarui");
   }
 
   Future<String> getActiveUser() async {
@@ -143,8 +149,7 @@ class ReportUpdateController extends GetxController {
 
   deleteImage(String imgName, String imgUrl) async {
     String reportID = reportData['reportID'];
-    DocumentReference imageDoc =
-        firestore.collection('operational_report').doc(reportID);
+    DocumentReference imageDoc = firestore.collection('operational_report').doc(reportID);
 
     try {
       await imageDoc.update({
@@ -163,5 +168,25 @@ class ReportUpdateController extends GetxController {
     } catch (e) {
       Get.snackbar("Error", "Gambar gagal dihapus, err: {$e}");
     }
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> streamReportCategory() async* {
+    yield* firestore.collection('report_category').doc('category').snapshots();
+  }
+
+  String? getCategory(String value, String type) {
+    String getValue;
+
+    if (type == "category") {
+      getValue = value;
+      reportCategory = getValue;
+      print(reportCategory);
+    } else {
+      getValue = value;
+      reportType = getValue;
+      print(reportType);
+    }
+
+    return getValue;
   }
 }

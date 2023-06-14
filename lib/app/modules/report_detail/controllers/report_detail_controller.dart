@@ -41,8 +41,7 @@ class ReportDetailController extends GetxController {
       isLoading.value = true;
       await ImageDownloader.downloadImage(
         imgURL,
-        destination: AndroidDestinationType.directoryPictures
-          ..subDirectory('gateApp/$imgName'),
+        destination: AndroidDestinationType.directoryPictures..subDirectory('gateApp/$imgName'),
       );
 
       Get.back();

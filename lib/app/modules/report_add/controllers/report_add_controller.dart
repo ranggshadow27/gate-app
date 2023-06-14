@@ -7,6 +7,9 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_storage/firebase_storage.dart' as f;
+import 'package:ntp/ntp.dart';
+
+import '../../../components/widgets/custom_snackbar.dart';
 
 class ReportAddController extends GetxController {
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -21,7 +24,6 @@ class ReportAddController extends GetxController {
   String? reportCategory;
   RxString selectedReport = "".obs;
 
-  DateTime now = DateTime.now();
   RxBool isLoading = false.obs;
 
   final ImagePicker picker = ImagePicker();
@@ -41,6 +43,11 @@ class ReportAddController extends GetxController {
   }
 
   submitImages(Map<String, dynamic> inputData) async {
+    DateTime now = await NTP.now(
+      lookUpAddress: "time.windows.com",
+      timeout: Duration(seconds: 5),
+    );
+
     String dateFormat = DateFormat("yyMM").format(now);
     String totalData = "${await getDataLength() + 1}".padLeft(3, '0');
 
@@ -51,8 +58,7 @@ class ReportAddController extends GetxController {
     for (var i = 0; i < imgs.length; i++) {
       File file = File(imgs[i].path);
 
-      f.Reference storageRef =
-          await storage.ref('report_images/$reportID/${imgs[i].name}');
+      f.Reference storageRef = await storage.ref('report_images/$reportID/${imgs[i].name}');
 
       await storageRef.putFile(file);
       String imageUrl = await storageRef.getDownloadURL();
@@ -68,6 +74,11 @@ class ReportAddController extends GetxController {
 
   Future<void> submitReport() async {
     try {
+      DateTime now = await NTP.now(
+        lookUpAddress: "time.windows.com",
+        timeout: Duration(seconds: 5),
+      );
+
       if (subjectC.text.isNotEmpty &&
           descriptionC.text.isNotEmpty &&
           reportType != null &&
@@ -95,10 +106,7 @@ class ReportAddController extends GetxController {
           print(inputData);
         }
 
-        await firestore
-            .collection('operational_report')
-            .doc(reportID)
-            .set(inputData);
+        await firestore.collection('operational_report').doc(reportID).set(inputData);
 
         await firestore.collection('report_log').doc(reportID).set(inputData);
 
@@ -106,18 +114,23 @@ class ReportAddController extends GetxController {
         images = null;
         imgs = [];
 
-        Get.snackbar("Berhasil", "Report sudah ditambahkan");
+        Get.showSnackbar(buildSnackSuccess("Report added succesfully"));
       } else {
-        Get.snackbar("Error", "Mohon isi semua data yang diperlukan");
+        Get.showSnackbar(buildSnackError("Please fill in all required fields"));
       }
     } catch (e) {
-      Get.snackbar("Error", "Gagal menambahkan report, err: $e");
+      Get.showSnackbar(buildSnackError("Failed to Add Report /n err:$e"));
     } finally {
       isLoading.value = false;
     }
   }
 
   Future<int> getDataLength() async {
+    DateTime now = await NTP.now(
+      lookUpAddress: "time.windows.com",
+      timeout: Duration(seconds: 5),
+    );
+
     String formatNow = DateFormat("yyyy-MM").format(now);
     String firstDayofMonth = "$formatNow-01T00:00:00";
 
@@ -149,16 +162,15 @@ class ReportAddController extends GetxController {
     try {
       if (newTypeC.text.isNotEmpty && reportCategory != null) {
         await firestore.collection('report_category').doc('category').update({
-          '${reportCategory!.toLowerCase()}':
-              FieldValue.arrayUnion([newTypeC.text]),
+          '${reportCategory!.toLowerCase()}': FieldValue.arrayUnion([newTypeC.text]),
         });
         Get.back();
         reportCategory = null;
         newTypeC.clear();
 
-        Get.snackbar("Berhasil", "Item berhasil ditambahkan");
+        Get.showSnackbar(buildSnackSuccess("Item added succesfully"));
       } else {
-        Get.snackbar("Error", "Mohon isi semua field yang diperlukan");
+        Get.showSnackbar(buildSnackError("Please fill in all required fields"));
       }
     } catch (e) {}
   }
@@ -194,13 +206,16 @@ class ReportAddController extends GetxController {
 
   updateCategory(String type) async {
     try {
-      if (reportCategory != null || reportType != null) {
+      if (reportCategory != null ||
+          reportType != null ||
+          reportCategory != "" ||
+          reportType != "") {
         isLoading.value = true;
 
         List<dynamic> reportData = await getReportList(type);
 
-        int getDataIndex = reportData
-            .indexOf("${type == 'category' ? reportCategory : reportType}");
+        int getDataIndex =
+            reportData.indexOf("${type == 'category' ? reportCategory : reportType}");
 
         await reportData.removeAt(getDataIndex);
 
@@ -209,17 +224,23 @@ class ReportAddController extends GetxController {
         });
 
         Get.back();
-        Get.snackbar("Berhasil",
-            "${type == 'category' ? reportCategory : reportData} berhasil dihapus");
+        Get.showSnackbar(
+          buildSnack(
+            "Success",
+            "${type == 'category' ? reportCategory : reportData} deleted from ${type == 'category' ? 'category' : 'type'}",
+          ),
+        );
 
         reportType = null;
         reportCategory = null;
         selectedReport.value = "";
       } else {
-        Get.snackbar(
-            "Error", "Mohon untuk mengisi kategori/tipe yang ingin dihapus");
+        Get.snackbar("Error", "Please select category/type to continue remove.");
       }
     } catch (e) {
+      Get.showSnackbar(
+        buildSnack("Error", "Please select category/type to continue remove."),
+      );
     } finally {
       isLoading.value = false;
     }
