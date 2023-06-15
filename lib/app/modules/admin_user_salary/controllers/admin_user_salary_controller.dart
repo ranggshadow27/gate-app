@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:gate/app/components/widgets/custom_snackbar.dart';
 import 'package:get/get.dart';
 
 class AdminUserSalaryController extends GetxController {
@@ -49,12 +50,12 @@ class AdminUserSalaryController extends GetxController {
         });
 
         Get.back();
-        Get.snackbar("Berhasil", "Data gaji user sudah diupdate");
+        Get.showSnackbar(buildSnackSuccess("Salary info updated successfully"));
       } else {
-        Get.snackbar("Error", "Mohon untuk mengisi semua data terlebih dahulu");
+        Get.showSnackbar(buildSnackError("Please fill all the required field"));
       }
     } catch (e) {
-      Get.snackbar("Error", "Gagal mengupdate data gaji user, err: $e");
+      Get.showSnackbar(buildSnackError("Failed to Update Salary Info, err: $e"));
     } finally {
       isLoading.value = false;
     }

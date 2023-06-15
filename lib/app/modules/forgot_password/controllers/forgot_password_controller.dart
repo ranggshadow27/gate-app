@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gate/app/components/widgets/custom_snackbar.dart';
 import 'package:get/get.dart';
+
 class ForgotPasswordController extends GetxController {
   TextEditingController emailC = TextEditingController();
   RxBool isLoading = false.obs;
@@ -11,20 +13,19 @@ class ForgotPasswordController extends GetxController {
       try {
         await auth.sendPasswordResetEmail(email: emailC.text);
         Get.back();
-        Get.snackbar('Berhasil',
-            "Link reset Password terkirim, silahkan cek Email/Spam");
+        Get.showSnackbar(buildSnackSuccess(
+            "Reset link has been sent to your email, please check your mail inbox/spam"));
       } on FirebaseAuthException catch (e) {
         if (e.code == "user-not-found") {
-          Get.snackbar('Error', "Email tidak terdaftar.");
+          Get.showSnackbar(buildSnackError("Email not registered"));
         } else {
-          Get.snackbar(
-              'Error', "Gagal mengirim link reset Password, \nerr: ${e.code}");
+          Get.showSnackbar(buildSnackError("Failed to send reset password link, err: ${e.code}"));
         }
       } finally {
         isLoading.value = false;
       }
     } else {
-      Get.snackbar("Error", "Mohon isi field email terlebih dahulu");
+      Get.showSnackbar(buildSnackError("Please fill the required field"));
     }
   }
 }

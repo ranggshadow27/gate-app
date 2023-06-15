@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
+import '../../../components/widgets/custom_snackbar.dart';
 import '../../../routes/app_pages.dart';
 
 class ResetDefaultPasswordController extends GetxController {
@@ -49,26 +50,26 @@ class ResetDefaultPasswordController extends GetxController {
             } else if (userRole!['role'] == "administrator") {
               Get.offAllNamed(Routes.ADMIN_HOME);
             }
-            Get.snackbar("Success", "Password berhasil diganti");
+
+            Get.showSnackbar(buildSnackSuccess("Password has been changed"));
           } on FirebaseAuthException catch (e) {
             if (e.code == "weak-password") {
-              Get.snackbar("Error",
-                  "Password terlalu lemah setidaknya 6 karakter kombinasi angka.");
+              Get.showSnackbar(buildSnackError(
+                  "Password to weak, please type at least 6 character with number"));
             } else {
-              Get.snackbar("Error", "Gagal mengganti password");
+              Get.showSnackbar(buildSnackError("Failed to change password"));
             }
           } finally {
             isLoading.value = false;
           }
         } else {
-          Get.snackbar("Error",
-              "Password baru masih default, mohon mengganti dengan password lain");
+          Get.showSnackbar(buildSnackError("Please your default change password"));
         }
       } else {
-        Get.snackbar("Error", "Password tidak sama.");
+        Get.showSnackbar(buildSnackError("Password doesnt match"));
       }
     } else {
-      Get.snackbar("Error", "Mohon isi semua field terlebih dahulu");
+      Get.showSnackbar(buildSnackError("Please fill all required fields"));
     }
   }
 }

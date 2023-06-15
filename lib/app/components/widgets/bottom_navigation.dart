@@ -1,5 +1,6 @@
 import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:gate/app/components/fonts.dart';
 import 'package:get/get.dart';
 import 'package:uicons/uicons.dart';
 
@@ -15,25 +16,18 @@ class RBottomNavigation extends StatelessWidget {
     return Obx(
       () => BottomBarCreative(
         items: [
-          TabItem(
-            icon: UIcons.solidRounded.home,
-          ),
-          TabItem(
-            icon: UIcons.solidRounded.time_quarter_to,
-          ),
+          TabItem(icon: UIcons.solidRounded.home, title: "Home"),
+          TabItem(icon: UIcons.solidRounded.time_quarter_to, title: "History"),
           TabItem(
             icon: pageController.isLoading.isFalse
                 ? UIcons.solidRounded.fingerprint
                 : UIcons.solidRounded.time_quarter_to,
           ),
-          TabItem(
-            icon: UIcons.solidRounded.document,
-          ),
-          TabItem(
-            icon: UIcons.solidRounded.user,
-          ),
+          TabItem(icon: UIcons.solidRounded.document, title: "Report"),
+          TabItem(icon: UIcons.solidRounded.user, title: "Profile"),
         ],
-        iconSize: 26,
+        // iconSize: 22,
+        titleStyle: interSemiBold.copyWith(letterSpacing: 0),
         backgroundColor: bgColor,
         boxShadow: [
           BoxShadow(

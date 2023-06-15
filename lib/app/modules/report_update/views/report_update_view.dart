@@ -29,135 +29,61 @@ class ReportUpdateView extends GetView<ReportUpdateController> {
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          children: [
-            RAppBar(onPressed: () => Get.back(), title: "Update Report"),
-            SizedBox(height: 20),
-            RTextField(hintText: 'Input subject', controller: controller.subjectC),
-            SizedBox(height: 10),
-            RDropdownMenu(
-              controller: controller,
-              dataType: 'category',
-              title: "Category",
-              isEnabled: true,
-              selectedItem: reportData['category'],
-            ),
-            SizedBox(height: 10),
-            RDropdownMenu(
-              controller: controller,
-              dataType: 'type',
-              title: "Type",
-              isEnabled: true,
-              selectedItem: reportData['type'],
-            ),
-            SizedBox(height: 10),
-            RTextField(
-              hintText: 'Input report description',
-              controller: controller.descriptionC,
-              maxLines: null,
-              inputType: TextInputType.multiline,
-            ),
-            SizedBox(height: 20),
-            StreamBuilder(
-              stream: controller.streamReportData(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: Text("Memuat gambar"),
-                  );
-                }
-                Map<String, dynamic> reportStream = snapshot.data!.data()!;
-
-                if (reportStream['images'] == null || reportStream['images'].length == 0) {
-                  return SizedBox();
-                }
-
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: reportStream['images'].length,
-                  itemBuilder: (context, index) {
-                    String imageUrl = reportStream['images'][index]['url'];
-                    String imageName = reportStream['images'][index]['name'];
-
-                    return Stack(
-                      children: [
-                        Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: SizedBox(
-                                width: Get.width,
-                                height: controller.isUpdate.isFalse ? 200 : 200,
-                                child: Image.network(
-                                  imageUrl,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    controller.deleteImage(imageName, imageUrl);
-                                  },
-                                  child: RText(
-                                    text: "Delete",
-                                    textStyle: interSemiBold,
-                                    color: redColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Divider(),
-                          ],
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-            ),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                padding: EdgeInsets.all(16),
-                side: BorderSide(color: borderColor),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                RAppBar(onPressed: () => Get.back(), title: "Update Report"),
+                SizedBox(height: 20),
+                RTextField(hintText: 'Input subject', controller: controller.subjectC),
+                SizedBox(height: 10),
+                RDropdownMenu(
+                  controller: controller,
+                  dataType: 'category',
+                  title: "Category",
+                  isEnabled: true,
+                  selectedItem: reportData['category'],
                 ),
-              ),
-              onPressed: () {
-                controllerAddReport.getImage();
-              },
-              child: RText(
-                text: "Upload Images",
-                textStyle: interSemiBold,
-                color: greenColor,
-                fontSize: 12.0,
-                isUnderlined: true,
-              ),
-            ),
-            SizedBox(height: 20),
-            GetBuilder<ReportAddController>(
-              builder: (c) => ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount:
-                    controllerAddReport.imgs.isNotEmpty ? controllerAddReport.imgs.length : 0,
-                itemBuilder: (context, index) {
-                  if (controllerAddReport.imgs.isEmpty) {
-                    return SizedBox();
-                  } else {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(width: 1, color: borderColor),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Stack(
+                SizedBox(height: 10),
+                RDropdownMenu(
+                  controller: controller,
+                  dataType: 'type',
+                  title: "Type",
+                  isEnabled: true,
+                  selectedItem: reportData['type'],
+                ),
+                SizedBox(height: 10),
+                RTextField(
+                  hintText: 'Input report description',
+                  controller: controller.descriptionC,
+                  maxLines: null,
+                  inputType: TextInputType.multiline,
+                ),
+                SizedBox(height: 20),
+                StreamBuilder(
+                  stream: controller.streamReportData(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: Text("Memuat gambar"),
+                      );
+                    }
+                    Map<String, dynamic> reportStream = snapshot.data!.data()!;
+
+                    if (reportStream['images'] == null || reportStream['images'].length == 0) {
+                      return SizedBox();
+                    }
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: reportStream['images'].length,
+                      itemBuilder: (context, index) {
+                        String imageUrl = reportStream['images'][index]['url'];
+                        String imageName = reportStream['images'][index]['name'];
+
+                        return Stack(
                           children: [
                             Column(
                               children: [
@@ -165,63 +91,143 @@ class ReportUpdateView extends GetView<ReportUpdateController> {
                                   borderRadius: BorderRadius.circular(16),
                                   child: SizedBox(
                                     width: Get.width,
-                                    height: 180,
-                                    child: Image.file(
-                                      File(controllerAddReport.imgs[index].path),
+                                    height: controller.isUpdate.isFalse ? 200 : 200,
+                                    child: Image.network(
+                                      imageUrl,
                                       fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: 6),
-                                RText(
-                                  text: controllerAddReport.imgs[index].name,
-                                  textStyle: interRegular,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {
+                                        controller.deleteImage(imageName, imageUrl);
+                                      },
+                                      child: RText(
+                                        text: "Delete",
+                                        textStyle: interSemiBold,
+                                        color: redColor,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(height: 6),
+                                Divider(),
                               ],
                             ),
-                            Positioned(
-                              right: 0,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  fixedSize: Size(60, 60),
-                                  backgroundColor: Colors.transparent,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(200),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                onPressed: () {
-                                  if (controllerAddReport.imgs.isNotEmpty) {
-                                    controllerAddReport.imgs.removeAt(index);
-                                    controllerAddReport.update();
-                                  }
-                                },
-                                child: Icon(
-                                  UIcons.solidRounded.cross_small,
-                                  color: redColor,
-                                ),
-                              ),
-                            ),
                           ],
-                        ),
-                      ),
+                        );
+                      },
                     );
-                  }
-                },
-              ),
+                  },
+                ),
+                SizedBox(height: 20),
+                GetBuilder<ReportAddController>(
+                  builder: (c) => ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount:
+                        controllerAddReport.imgs.isNotEmpty ? controllerAddReport.imgs.length : 0,
+                    itemBuilder: (context, index) {
+                      if (controllerAddReport.imgs.isEmpty) {
+                        return SizedBox();
+                      } else {
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: 10),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(width: 1, color: borderColor),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Stack(
+                              children: [
+                                Column(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: SizedBox(
+                                        width: Get.width,
+                                        height: 180,
+                                        child: Image.file(
+                                          File(controllerAddReport.imgs[index].path),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 6),
+                                    RText(
+                                      text: controllerAddReport.imgs[index].name,
+                                      textStyle: interRegular,
+                                    ),
+                                    SizedBox(height: 6),
+                                  ],
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      fixedSize: Size(60, 60),
+                                      backgroundColor: Colors.transparent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(200),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    onPressed: () {
+                                      if (controllerAddReport.imgs.isNotEmpty) {
+                                        controllerAddReport.imgs.removeAt(index);
+                                        controllerAddReport.update();
+                                      }
+                                    },
+                                    child: Icon(
+                                      UIcons.solidRounded.cross_small,
+                                      color: redColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.all(16),
+                    fixedSize: Size(Get.width, 50),
+                    side: BorderSide(color: borderColor),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  onPressed: () {
+                    controllerAddReport.getImage();
+                  },
+                  child: RText(
+                    text: "Upload Images",
+                    textStyle: interSemiBold,
+                    color: greenColor,
+                    fontSize: 12.0,
+                    isUnderlined: true,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Obx(
+                  () => RButton(
+                    color: greenColor,
+                    text: controller.isLoading.isFalse ? "Update Report" : "Loading ..",
+                    callback: () async {
+                      await controller.updateReport();
+                    },
+                  ),
+                ),
+                SizedBox(height: 40),
+              ],
             ),
-            Obx(
-              () => RButton(
-                color: greenColor,
-                text: controller.isLoading.isFalse ? "Update Report" : "Loading ..",
-                callback: () async {
-                  await controller.updateReport();
-                },
-              ),
-            ),
-            SizedBox(height: 40),
-          ],
+          ),
         ),
       ),
     );

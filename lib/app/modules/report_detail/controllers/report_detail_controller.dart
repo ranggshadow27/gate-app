@@ -4,6 +4,8 @@ import 'package:firebase_storage/firebase_storage.dart' as f;
 import 'package:get/get.dart';
 import 'package:image_downloader/image_downloader.dart';
 
+import '../../../components/widgets/custom_snackbar.dart';
+
 class ReportDetailController extends GetxController {
   final Map<String, dynamic> reportData = Get.arguments;
 
@@ -30,9 +32,9 @@ class ReportDetailController extends GetxController {
 
       Get.back();
       Get.back();
-      Get.snackbar("Berhasil", "Report ID : $reportID berhasil dihapus");
+      Get.showSnackbar(buildSnackSuccess("Report ID : $reportID deleted successfully"));
     } catch (e) {
-      Get.snackbar("Error", "Gagal menghapus report, err: $e");
+      Get.showSnackbar(buildSnackError("Failed to delete report. \nerr: $e"));
     }
   }
 
@@ -45,7 +47,7 @@ class ReportDetailController extends GetxController {
       );
 
       Get.back();
-      Get.snackbar("Berhasil", "$imgName berhasil terunduh");
+      Get.showSnackbar(buildSnackSuccess("$imgName downloaded"));
     } catch (e) {
       print(e);
     } finally {

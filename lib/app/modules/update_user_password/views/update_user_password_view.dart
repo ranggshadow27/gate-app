@@ -34,12 +34,19 @@ class UpdateUserPasswordView extends GetView<UpdateUserPasswordController> {
             textStyle: interRegular,
           ),
           SizedBox(height: 30),
+          RText(
+            text: "Old Password.",
+            textStyle: interMedium,
+            textAlign: TextAlign.start,
+          ),
+          SizedBox(height: 10),
           Obx(
             () => RTextField(
               hintText: "Old Password",
               icon: SvgIcon(svgData: RSvgData.lock),
               controller: controller.oldPassC,
               isPassword: showOldPass.value,
+              maxLines: 1,
               suffixIcon: IconButton(
                 onPressed: () {
                   showOldPass.toggle();
@@ -49,12 +56,19 @@ class UpdateUserPasswordView extends GetView<UpdateUserPasswordController> {
             ),
           ),
           SizedBox(height: 20),
+          RText(
+            text: "New Password.",
+            textStyle: interMedium,
+            textAlign: TextAlign.start,
+          ),
+          SizedBox(height: 10),
           Obx(
             () => RTextField(
               hintText: "New Password",
               icon: SvgIcon(svgData: RSvgData.lock),
               controller: controller.newPassC,
               isPassword: showNewPass.value,
+              maxLines: 1,
               suffixIcon: IconButton(
                 onPressed: () {
                   showNewPass.toggle();
@@ -64,12 +78,19 @@ class UpdateUserPasswordView extends GetView<UpdateUserPasswordController> {
             ),
           ),
           SizedBox(height: 20),
+          RText(
+            text: "Confirm New Password.",
+            textStyle: interMedium,
+            textAlign: TextAlign.start,
+          ),
+          SizedBox(height: 10),
           Obx(
             () => RTextField(
               hintText: "Confirm New Password",
               icon: SvgIcon(svgData: RSvgData.lock),
               controller: controller.confirmPassC,
               isPassword: showConfirmPass.value,
+              maxLines: 1,
               suffixIcon: IconButton(
                 onPressed: () {
                   showConfirmPass.toggle();

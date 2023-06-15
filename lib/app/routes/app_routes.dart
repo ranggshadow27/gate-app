@@ -28,6 +28,7 @@ abstract class Routes {
   static const DISPENSATION = _Paths.DISPENSATION;
   static const DISPENSATION_ADD = _Paths.DISPENSATION_ADD;
   static const DISPENSATION_DETAILS = _Paths.DISPENSATION_DETAILS;
+  static const ADMIN_DISPENSATIONS = _Paths.ADMIN_DISPENSATIONS;
 }
 
 abstract class _Paths {
@@ -55,4 +56,5 @@ abstract class _Paths {
   static const DISPENSATION = '/dispensation';
   static const DISPENSATION_ADD = '/dispensation-add';
   static const DISPENSATION_DETAILS = '/dispensation-details';
+  static const ADMIN_DISPENSATIONS = '/admin-dispensations';
 }

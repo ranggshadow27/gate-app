@@ -61,19 +61,33 @@ class ReportDetailView extends GetView<ReportDetailController> {
                             onPressed: () {
                               print(controller.reportID);
                               Get.defaultDialog(
-                                backgroundColor: borderColor,
+                                backgroundColor: whiteColor,
                                 title: "Confirm",
-                                middleText: "Hapus data report ${reportData['reportID']}?",
+                                titleStyle: interSemiBold.copyWith(
+                                  fontSize: 16.0,
+                                ),
+                                middleText:
+                                    "Are you sure to delete this ${reportData['reportID']} report?",
+                                middleTextStyle: interRegular.copyWith(
+                                  fontSize: 14.0,
+                                ),
                                 actions: [
-                                  OutlinedButton(
-                                    onPressed: () => Get.back(),
-                                    child: Text("Back"),
+                                  RButton(
+                                    color: whiteColor,
+                                    borderC: borderColor,
+                                    borderWidth: 2,
+                                    fontColor: borderColor,
+                                    text: "Back",
+                                    callback: () => Get.back(),
+                                    height: 40,
+                                    width: 100,
                                   ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      controller.deleteReport();
-                                    },
-                                    child: Text("Delete"),
+                                  RButton(
+                                    color: redColor,
+                                    text: "Delete",
+                                    callback: () => controller.deleteReport(),
+                                    height: 40,
+                                    width: 100,
                                   ),
                                 ],
                               );

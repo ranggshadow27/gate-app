@@ -21,7 +21,7 @@ class PresenceHistoryController extends GetxController {
   String? startTime;
   String endTime = DateTime.now().toIso8601String();
   String filterOption = "Presence";
-  bool isDescending = true;
+  RxBool isDescending = true.obs;
 
   Future<QuerySnapshot<Map<String, dynamic>>> getUserPresenceHistory() async {
     String uid = auth.currentUser!.uid;
@@ -35,7 +35,7 @@ class PresenceHistoryController extends GetxController {
           .doc(uid)
           .collection(filterOption.toLowerCase())
           .where("date", isLessThan: endTime)
-          .orderBy("date", descending: isDescending)
+          .orderBy("date", descending: isDescending.value)
           .get();
     } else {
       print(startTime);
@@ -47,16 +47,14 @@ class PresenceHistoryController extends GetxController {
           .collection(filterOption.toLowerCase())
           .where("date", isGreaterThan: startTime)
           .where("date", isLessThan: endTime)
-          .orderBy("date", descending: isDescending)
+          .orderBy("date", descending: isDescending.value)
           .get();
     }
   }
 
   void pickDate(DateTime pickStartTime, DateTime pickEndTime) {
     startTime = pickStartTime.toIso8601String();
-    endTime = pickEndTime
-        .add(Duration(hours: 23, minutes: 59, seconds: 59))
-        .toIso8601String();
+    endTime = pickEndTime.add(Duration(hours: 23, minutes: 59, seconds: 59)).toIso8601String();
     update();
   }
 
@@ -72,11 +70,9 @@ class PresenceHistoryController extends GetxController {
     } else {
       final pdf = pw.Document();
 
-      final nowFormat =
-          formatDate(DateTime.now().toIso8601String()).replaceAll("/", "");
+      final nowFormat = formatDate(DateTime.now().toIso8601String()).replaceAll("/", "");
 
-      var getRegularFont =
-          await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+      var getRegularFont = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
       var robotoRegularFont = pw.Font.ttf(getRegularFont);
 
       var getBoldFont = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
@@ -105,7 +101,7 @@ class PresenceHistoryController extends GetxController {
                   dataUsers: dataUser,
                   title: "Penerima Tugas,",
                   dataValue: '${dataUser[0]['fullname']}',
-                  grade: "Gateway Operator",
+                  grade: "${dataUser[0]['grade']}",
                   font: myFonts['bold'],
                 ),
                 RFooterPage(
@@ -161,31 +157,31 @@ class PresenceHistoryController extends GetxController {
                   RtitleRow(
                     dataUsers: dataUser,
                     text: 'Name',
-                    dataValue: 'fullname',
+                    dataValue: '${dataUser[0]["fullname"]}',
                     font: myFonts,
                   ),
                   RtitleRow(
                     dataUsers: dataUser,
                     text: 'NIP',
-                    dataValue: 'nip',
+                    dataValue: '${dataUser[0]["nip"]}',
                     font: myFonts,
                   ),
                   RtitleRow(
                     dataUsers: dataUser,
                     text: 'Jabatan',
-                    dataValue: 'grade',
+                    dataValue: '${dataUser[0]["grade"]}',
                     font: myFonts,
                   ),
                   RtitleRow(
                     dataUsers: dataUser,
                     text: 'Divisi/Departement',
-                    dataValue: 'createdAt',
+                    dataValue: 'PT. Infracom Telesarana',
                     font: myFonts,
                   ),
                   RtitleRow(
                     dataUsers: dataUser,
                     text: 'Lokasi Kerja',
-                    dataValue: 'address',
+                    dataValue: 'Gateway Cikarang',
                     font: myFonts,
                   ),
                   pw.SizedBox(height: 10),
@@ -226,8 +222,7 @@ class PresenceHistoryController extends GetxController {
       Uint8List bytes = await pdf.save();
 
       final dir = await getApplicationDocumentsDirectory();
-      final filePath = File(
-          '${dir.path}/${nowFormat}_ExportPDF_${dataUser[0]['fullname']}.pdf');
+      final filePath = File('${dir.path}/${nowFormat}_ExportPDF_${dataUser[0]['fullname']}.pdf');
 
       await filePath.writeAsBytes(bytes);
 
@@ -277,7 +272,7 @@ class PresenceHistoryController extends GetxController {
           style: boldFontStyle,
         ),
         pw.Text(
-          dataUsers[0][dataValue],
+          dataValue,
           style: boldFontStyle,
         ),
       ],
@@ -301,8 +296,7 @@ class DataController extends GetxController {
   Future<void> fetchData() async {
     String uid = auth.currentUser!.uid;
 
-    QuerySnapshot<Map<String, dynamic>> snapshotOvertime = await historyC
-        .firestore
+    QuerySnapshot<Map<String, dynamic>> snapshotOvertime = await historyC.firestore
         .collection('users')
         .doc(uid)
         .collection('overtime')
@@ -311,8 +305,7 @@ class DataController extends GetxController {
         .orderBy("date", descending: false)
         .get();
 
-    QuerySnapshot<Map<String, dynamic>> snapshotPresence = await historyC
-        .firestore
+    QuerySnapshot<Map<String, dynamic>> snapshotPresence = await historyC.firestore
         .collection("users")
         .doc(uid)
         .collection("presence")
@@ -328,7 +321,6 @@ class DataController extends GetxController {
 
     dataUser.value = [getDataUser];
     dataPresence.value = snapshotPresence.docs.map((e) => e.data()).toList();
-    dataOvertime.value =
-        snapshotOvertime.docs.map((data) => data.data()).toList();
+    dataOvertime.value = snapshotOvertime.docs.map((data) => data.data()).toList();
   }
 }

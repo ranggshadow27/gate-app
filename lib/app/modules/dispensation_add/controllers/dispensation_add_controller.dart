@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:gate/app/components/colors.dart';
+import 'package:gate/app/components/fonts.dart';
+import 'package:gate/app/components/widgets/custom_snackbar.dart';
 import 'package:gate/app/modules/dispensation_add/controllers/api_services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+
+import '../../../components/widgets/button.dart';
+import '../../../components/widgets/text_widget.dart';
 
 class DispensationAddController extends GetxController {
   final ApiService apiService = ApiService();
@@ -18,20 +24,39 @@ class DispensationAddController extends GetxController {
 
   submitDispensation() async {
     if (dispensationType == null) {
-      return Get.snackbar("Error", "Mohon untuk mengisi tipe dispensasi");
+      return Get.showSnackbar(buildSnackError("Please select Dispensation Type"));
     }
     if (subjectC.text.isEmpty || descC.text.isEmpty) {
-      return Get.snackbar("Error", "Mohon untuk mengisi semua kolom yang ada");
+      return Get.showSnackbar(buildSnackError("Please fill the required fields"));
     }
 
     Get.defaultDialog(
-      title: "Konfirmasi",
-      middleText:
-          "Anda yakin untuk mengajukan dispensasi dengan keterangan $dispensationType?",
+      title: "Confirm",
+      middleText: "Insert dispensation data with reason of : $dispensationType?",
+      titleStyle: interSemiBold,
+      middleTextStyle: interMedium,
+      contentPadding: EdgeInsets.all(20),
       actions: [
-        OutlinedButton(onPressed: () => Get.back(), child: Text("Kembali")),
-        ElevatedButton(
-          onPressed: () async {
+        OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(
+              color: borderColor,
+            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+          onPressed: () => Get.back(),
+          child: RText(
+            text: "Back",
+            textStyle: interMedium,
+            color: borderColor,
+          ),
+        ),
+        RButton(
+          height: 40,
+          width: 100,
+          color: greenColor,
+          text: "Confirm",
+          callback: () async {
             isLoading.value = true;
             Get.back();
             showLoadingDialog();
@@ -48,14 +73,14 @@ class DispensationAddController extends GetxController {
 
               Get.back();
               Get.back();
-              Get.snackbar("Berhasil",
-                  "Dispensasi $dispensationType berhasil ditambahkan");
+
+              Get.showSnackbar(
+                  buildSnackSuccess("Dispensation $dispensationType successfully added"));
             } on FormatException catch (e) {
             } finally {
               isLoading.value = false;
             }
           },
-          child: Text("Konfirmasi"),
         ),
       ],
     );
@@ -71,10 +96,7 @@ class DispensationAddController extends GetxController {
       source: ImageSource.camera,
       imageQuality: 50,
     );
-    if (image != null) {
-      print("Ini pathnya : ${image!.path}");
-      print("Ini namenya : ${image!.name}");
-    }
+    if (image != null) {}
     update();
   }
 

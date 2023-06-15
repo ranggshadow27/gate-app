@@ -56,8 +56,7 @@ pw.Widget buildTable({
                 ? RNormalRows(
                     getHour(dataValue, i) > 3 && getHour(dataValue, i) < 12
                         ? "Shift 1"
-                        : getHour(dataValue, i) > 13 &&
-                                getHour(dataValue, i) < 18
+                        : getHour(dataValue, i) >= 13 && getHour(dataValue, i) <= 18
                             ? "Shift 2"
                             : "Shift 3",
                     font['bold'],
@@ -79,8 +78,7 @@ pw.Widget buildTable({
 int overtimeToHours({required List<dynamic> dataValue, required int i}) {
   int overtime = 0;
 
-  String getUserOvertime =
-      dataValue[i]['total'].toString().replaceAll(" Minutes", "");
+  String getUserOvertime = dataValue[i]['total'].toString().replaceAll(" Minutes", "");
 
   double overtimeToHours = int.parse(getUserOvertime) / 60;
 

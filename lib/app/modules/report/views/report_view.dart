@@ -31,8 +31,7 @@ class ReportView extends GetView<ReportController> {
               width: double.infinity,
               child: Row(
                 children: [
-                  SizedBox(
-                    width: Get.width * .5,
+                  Expanded(
                     child: FutureBuilder(
                       future: controller.getCategory(),
                       builder: (context, snapshot) {
@@ -51,7 +50,7 @@ class ReportView extends GetView<ReportController> {
                       },
                     ),
                   ),
-                  Spacer(),
+                  SizedBox(width: 10),
                   Obx(
                     () => ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -74,7 +73,7 @@ class ReportView extends GetView<ReportController> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 5),
+                  SizedBox(width: 10),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: greenColor,
@@ -113,22 +112,17 @@ class ReportView extends GetView<ReportController> {
                       );
                     }
 
-                    // print("Ini datanya -----> ${snapshot.data!}");
-
                     return ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 25, vertical: 5),
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                       itemCount: snapshot.data!.docs.length,
                       itemBuilder: (context, index) {
                         Map<String, dynamic> reportData = snapshot.data!.docs[index].data();
 
-                        DateFormat dateFormat = DateFormat("EEEE, dd MMMM yyyy");
-                        DateFormat hourFormat = DateFormat("kk:mm");
+                        String formattedDate = DateFormat("EEEE, dd MMMM yyyy")
+                            .format(DateTime.parse("${reportData['createdAt']}"));
 
-                        String formattedDate =
-                            dateFormat.format(DateTime.parse("${reportData['createdAt']}"));
-
-                        String formattedHour =
-                            hourFormat.format(DateTime.parse("${reportData['createdAt']}"));
+                        String formattedHour = DateFormat("kk:mm")
+                            .format(DateTime.parse("${reportData['createdAt']}"));
 
                         print("Ini data Formatnya ----------> $formattedDate");
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:ntp/ntp.dart';
 
 class HomeController extends GetxController {
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -14,7 +16,18 @@ class HomeController extends GetxController {
 
   final imagePicker = ImagePicker();
   final faceDetector = FaceDetector(options: FaceDetectorOptions());
+
   XFile? image;
+  RxString realTimeDate = "Loading..".obs;
+  RxString realTimeHour = "Loading..".obs;
+
+  Timer? timer;
+
+  @override
+  void onInit() async {
+    super.onInit();
+    getTodayDate();
+  }
 
   pickImage() async {
     image = await imagePicker.pickImage(
@@ -81,9 +94,19 @@ class HomeController extends GetxController {
         .snapshots();
   }
 
+  getTodayDate() async {
+    DateTime ntpNow = await NTP.now();
+    realTimeDate.value = DateFormat("EEEE, dd MMMM yyyy").format(await NTP.now());
+    realTimeHour.value = DateFormat("hh:mm:ss a").format(ntpNow);
+
+    timer = Timer(Duration(seconds: 1), () {
+      getTodayDate();
+    });
+  }
+
   Stream<DocumentSnapshot<Map<String, dynamic>>> getUserTodayPresence() async* {
     String uid = auth.currentUser!.uid;
-    String dateToday = DateFormat('dd-MM-yyyy').format(DateTime.now());
+    String dateToday = DateFormat('dd-MM-yyyy').format(await NTP.now());
 
     yield* firestore.collection('users').doc(uid).collection('presence').doc(dateToday).snapshots();
   }
@@ -105,5 +128,12 @@ class HomeController extends GetxController {
         ),
       ),
     );
+  }
+
+  @override
+  void onDispose() {
+    print("--------------------->Sudah didispos");
+    timer?.cancel();
+    super.dispose();
   }
 }

@@ -40,6 +40,7 @@ class ResetDefaultPasswordView extends GetView<ResetDefaultPasswordController> {
               icon: SvgIcon(svgData: RSvgData.lock),
               controller: controller.newPassC,
               isPassword: showConfPassword.value,
+              maxLines: 1,
               suffixIcon: IconButton(
                 onPressed: () {
                   showConfPassword.toggle();
@@ -59,6 +60,7 @@ class ResetDefaultPasswordView extends GetView<ResetDefaultPasswordController> {
               icon: SvgIcon(svgData: RSvgData.lock),
               controller: controller.confirmNewPassC,
               isPassword: showPassword.value,
+              maxLines: 1,
               suffixIcon: IconButton(
                 onPressed: () {
                   showPassword.toggle();

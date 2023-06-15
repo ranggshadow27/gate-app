@@ -75,6 +75,7 @@ class LoginView extends GetView<LoginController> {
                             inputType: TextInputType.emailAddress,
                             isPassword: isPassword.isFalse ? false : true,
                             controller: controller.passC,
+                            maxLines: 1,
                           ),
                         ),
                         SizedBox(height: 24),

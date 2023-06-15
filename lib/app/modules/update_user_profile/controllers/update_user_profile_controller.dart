@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gate/app/components/widgets/custom_snackbar.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as fStorage;
@@ -66,14 +67,14 @@ class UpdateUserProfileController extends GetxController {
         image = null;
 
         Get.back();
-        Get.snackbar("Berhasil", "Profil berhasil diperbarui");
+        Get.showSnackbar(buildSnackSuccess("Profile updated successfully"));
       } catch (e) {
-        Get.snackbar("Error", "Gagal menambahkan data. err: ${e}");
+        Get.showSnackbar(buildSnackError("Failed to update profile, err: $e"));
       } finally {
         isLoading.value = false;
       }
     } else {
-      Get.snackbar("Error", "Mohon isi semua field.");
+      Get.showSnackbar(buildSnackError("Please fill the required field"));
     }
   }
 
@@ -84,9 +85,9 @@ class UpdateUserProfileController extends GetxController {
         "avatar": FieldValue.delete(),
       });
       Get.back();
-      Get.snackbar("Berhasil", "Avatar terhapus");
+      Get.showSnackbar(buildSnackSuccess("Avatar deleted"));
     } catch (e) {
-      Get.snackbar("Error", "Gagal menghapus avatar. err: ${e}");
+      Get.showSnackbar(buildSnackError("Failed to delete avatar, err: $e"));
     } finally {
       isAvatarDelete.value = false;
       update();

@@ -1,4 +1,5 @@
 import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gate/app/components/colors.dart';
@@ -49,59 +50,65 @@ class UserProfileView extends GetView<UserProfileController> {
 
                 return Column(
                   children: [
-                    ClipOval(
-                      child: Container(
-                        height: 100,
-                        width: 100,
-                        color: borderColor,
-                        child: Image.network(
-                          userData['avatar'] != null
-                              ? userData['avatar'] != ""
-                                  ? userData['avatar']
-                                  : userData['avatar']
-                              : defaultAvatar,
-                          fit: BoxFit.cover,
+                    InkWell(
+                      onTap: () => Get.toNamed(Routes.UPDATE_USER_PROFILE, arguments: userData),
+                      child: ClipOval(
+                        child: Container(
+                          height: 100,
+                          width: 100,
+                          color: borderColor,
+                          child: userData['avatar'] != null
+                              ? CachedNetworkImage(
+                                  imageUrl: userData['avatar'],
+                                  placeholder: (context, url) => Image.network(
+                                    defaultAvatar,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.network(
+                                  defaultAvatar,
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                       ),
                     ),
                     SizedBox(height: 40),
                     RText(text: "Account Info.", textStyle: interSemiBold),
                     SizedBox(height: 10),
-                    IntrinsicHeight(
-                      child: Container(
-                        width: Get.width,
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-                        decoration: BoxDecoration(
-                          color: borderColor,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          children: [
-                            buildAccountInfo(
-                              title: "Name :",
-                              userData: userData["fullname"],
-                              icon: UIcons.solidRounded.user,
-                            ),
-                            SizedBox(height: 18),
-                            buildAccountInfo(
-                              title: "Email :",
-                              userData: userData["email"],
-                              icon: UIcons.solidRounded.envelope,
-                            ),
-                            SizedBox(height: 18),
-                            buildAccountInfo(
-                              title: "NIP :",
-                              userData: userData["nip"],
-                              icon: UIcons.solidRounded.address_book,
-                            ),
-                            SizedBox(height: 18),
-                            buildAccountInfo(
-                              title: "Grade :",
-                              userData: userData["grade"],
-                              icon: UIcons.solidRounded.chart_tree,
-                            ),
-                          ],
-                        ),
+                    Container(
+                      width: Get.width,
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+                      decoration: BoxDecoration(
+                        color: borderColor,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          buildAccountInfo(
+                            title: "Name :",
+                            userData: userData["fullname"],
+                            icon: UIcons.solidRounded.user,
+                          ),
+                          SizedBox(height: 18),
+                          buildAccountInfo(
+                            title: "Email :",
+                            userData: userData["email"],
+                            icon: UIcons.solidRounded.envelope,
+                          ),
+                          SizedBox(height: 18),
+                          buildAccountInfo(
+                            title: "NIP :",
+                            userData: userData["nip"],
+                            icon: UIcons.solidRounded.address_book,
+                          ),
+                          SizedBox(height: 18),
+                          buildAccountInfo(
+                            title: "Grade :",
+                            userData: userData["grade"],
+                            icon: UIcons.solidRounded.chart_tree,
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(height: 10),
@@ -131,38 +138,54 @@ class UserProfileView extends GetView<UserProfileController> {
                       },
                     ),
                     SizedBox(height: 20),
-                    IntrinsicHeight(
-                      child: Container(
-                        width: Get.width,
-                        decoration: BoxDecoration(
-                          color: borderColor,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          children: [
-                            buildAccountSettings(
-                              title: "Presence History",
-                              icon: UIcons.solidRounded.time_quarter_to,
-                              onTap: () {
-                                pageController.visitPage(1);
-                              },
-                              isFirst: true,
+                    Container(
+                      width: Get.width,
+                      decoration: BoxDecoration(
+                        color: borderColor,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          buildAccountSettings(
+                            title: "Presence History",
+                            icon: UIcons.solidRounded.time_quarter_to,
+                            onTap: () {
+                              pageController.visitPage(1);
+                            },
+                            isFirst: true,
+                          ),
+                          buildAccountSettings(
+                            title: "Update Password",
+                            icon: UIcons.solidRounded.refresh,
+                            onTap: () => Get.toNamed(Routes.UPDATE_USER_PASSWORD),
+                          ),
+                          buildAccountSettings(
+                            title: "Update Profile",
+                            icon: UIcons.solidRounded.user_time,
+                            onTap: () => Get.toNamed(
+                              Routes.UPDATE_USER_PASSWORD,
+                              arguments: userData,
                             ),
-                            buildAccountSettings(
-                              title: "Update Password",
-                              icon: UIcons.solidRounded.refresh,
-                              onTap: () => Get.toNamed(Routes.UPDATE_USER_PASSWORD),
-                            ),
-                            buildAccountSettings(
-                              title: "Operational Report",
-                              icon: UIcons.solidRounded.document,
-                              onTap: () {
-                                pageController.visitPage(3);
-                              },
-                              isLast: true,
-                            ),
-                          ],
-                        ),
+                          ),
+                          buildAccountSettings(
+                            title: "Payroll",
+                            icon: UIcons.solidRounded.receipt,
+                            onTap: () => Get.toNamed(Routes.PAYROLL),
+                          ),
+                          buildAccountSettings(
+                            title: "Dispensation",
+                            icon: UIcons.solidRounded.doctor,
+                            onTap: () => Get.toNamed(Routes.DISPENSATION),
+                          ),
+                          buildAccountSettings(
+                            title: "Operational Report",
+                            icon: UIcons.solidRounded.document,
+                            onTap: () {
+                              pageController.visitPage(3);
+                            },
+                            isLast: true,
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(height: 40),

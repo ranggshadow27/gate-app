@@ -5,6 +5,10 @@ import 'package:device_info/device_info.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as fs;
 import 'package:flutter/material.dart';
+import 'package:gate/app/components/colors.dart';
+import 'package:gate/app/components/fonts.dart';
+import 'package:gate/app/components/widgets/button.dart';
+import 'package:gate/app/components/widgets/custom_snackbar.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -13,6 +17,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:ntp/ntp.dart';
 
+import '../components/widgets/text_widget.dart';
 import '../routes/app_pages.dart';
 
 class PageSetupController extends GetxController {
@@ -30,7 +35,6 @@ class PageSetupController extends GetxController {
   RxBool isLoading = false.obs;
 
   void visitPage(int i) async {
-    print("Page $i Visited");
     initialPage.value = i;
     switch (i) {
       case 0:
@@ -117,20 +121,31 @@ class PageSetupController extends GetxController {
             barrierDismissible: false,
             content: Column(
               children: [
-                Container(
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
                     height: 200,
                     width: 200,
-                    child: Image.file(File(image!.path), fit: BoxFit.cover)),
+                    child: Image.file(File(image!.path), fit: BoxFit.cover),
+                  ),
+                ),
                 SizedBox(height: 20),
-                Icon(Icons.close_rounded),
-                Text("Ini Wajahnya Gaada Pucit"),
+                RText(
+                  text: "Face not detected, please try again.",
+                  textStyle: interRegular,
+                  color: bgColor,
+                ),
                 SizedBox(height: 20),
-                ElevatedButton(
-                    onPressed: () {
-                      Get.back();
-                      visitPage(0);
-                    },
-                    child: Text("Back"))
+                RButton(
+                  height: 60,
+                  width: 120,
+                  color: redColor,
+                  text: "Back",
+                  callback: () {
+                    Get.back();
+                    visitPage(0);
+                  },
+                ),
               ],
             ),
           );
@@ -293,14 +308,11 @@ class PageSetupController extends GetxController {
           );
         }
       } else {
-        Get.snackbar(
-          "Error",
-          positionResponse["message"],
-        );
+        Get.showSnackbar(buildSnackError(positionResponse["message"]));
       }
     } catch (e) {
-      Get.snackbar(
-          "Error", "Gagal melakukan absensi mohon cek koneksi internet dan coba lagi, err: $e");
+      Get.showSnackbar(
+          buildSnackError("Failed to do Presence, please check your internet and try again"));
     } finally {
       isLoading.value = false;
       visitPage(0);

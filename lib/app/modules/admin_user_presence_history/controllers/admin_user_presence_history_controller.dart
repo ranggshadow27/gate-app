@@ -18,15 +18,17 @@ class AdminUserPresenceHistoryController extends GetxController {
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  String getUserUID = Get.arguments;
+  String getUserUID = Get.arguments['uid'];
 
   String filterOption = "Normal Presence";
-  bool filterType = true;
+  RxBool filterType = true.obs;
   String? startDate;
   String endDate = DateTime.now().toIso8601String();
   List<dynamic> dataPresence = [];
   List<dynamic> dataOvertime = [];
   List<dynamic> dataUser = [];
+
+  RxBool isDescending = false.obs;
 
   Future<QuerySnapshot<Map<String, dynamic>>> getUserPresenceHistory(
     String getFilterOption,
@@ -43,7 +45,7 @@ class AdminUserPresenceHistoryController extends GetxController {
           .where('date', isLessThan: endDate)
           .orderBy(
             'date',
-            descending: getFilterType == filterType ? true : false,
+            descending: getFilterType == filterType.value ? true : false,
           )
           .get();
     } else {
@@ -55,7 +57,7 @@ class AdminUserPresenceHistoryController extends GetxController {
           .where('date', isLessThan: endDate)
           .orderBy(
             'date',
-            descending: getFilterType == filterType ? true : false,
+            descending: getFilterType == filterType.value ? true : false,
           )
           .get();
     }
@@ -79,8 +81,7 @@ class AdminUserPresenceHistoryController extends GetxController {
         .orderBy("date", descending: false)
         .get();
 
-    DocumentSnapshot<Map<String, dynamic>> getUserInfo =
-        await documentRef.get();
+    DocumentSnapshot<Map<String, dynamic>> getUserInfo = await documentRef.get();
 
     Map<String, dynamic>? userInfo = getUserInfo.data();
 
@@ -94,15 +95,13 @@ class AdminUserPresenceHistoryController extends GetxController {
     required DateTime getEndDate,
   }) async {
     startDate = getStartDate!.toIso8601String();
-    endDate =
-        getEndDate.add(Duration(hours: 23, minutes: 59)).toIso8601String();
+    endDate = getEndDate.add(Duration(hours: 23, minutes: 59)).toIso8601String();
 
     update();
   }
 
   String dateFormat(String inputDate) {
-    String formatDate =
-        DateFormat("EEEE, dd MMMM yyyy").format(DateTime.parse(inputDate));
+    String formatDate = DateFormat("EEEE, dd MMMM yyyy").format(DateTime.parse(inputDate));
 
     return formatDate;
   }
@@ -115,11 +114,9 @@ class AdminUserPresenceHistoryController extends GetxController {
     } else {
       final pdf = pw.Document();
 
-      final nowFormat =
-          formatDate(DateTime.now().toIso8601String()).replaceAll("/", "");
+      final nowFormat = formatDate(DateTime.now().toIso8601String()).replaceAll("/", "");
 
-      var getRegularFont =
-          await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+      var getRegularFont = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
       var robotoRegularFont = pw.Font.ttf(getRegularFont);
 
       var getBoldFont = await rootBundle.load('assets/fonts/Roboto-Bold.ttf');
@@ -200,31 +197,31 @@ class AdminUserPresenceHistoryController extends GetxController {
                       RtitleRow(
                         dataUsers: dataUser,
                         text: 'Name',
-                        dataValue: 'fullname',
+                        dataValue: '${dataUser[0]["fullname"]}',
                         font: myFonts,
                       ),
                       RtitleRow(
                         dataUsers: dataUser,
                         text: 'NIP',
-                        dataValue: 'nip',
+                        dataValue: '${dataUser[0]["nip"]}',
                         font: myFonts,
                       ),
                       RtitleRow(
                         dataUsers: dataUser,
                         text: 'Jabatan',
-                        dataValue: 'grade',
+                        dataValue: '${dataUser[0]["grade"]}',
                         font: myFonts,
                       ),
                       RtitleRow(
                         dataUsers: dataUser,
                         text: 'Divisi/Departement',
-                        dataValue: 'createdAt',
+                        dataValue: 'PT. Infracom Telesarana',
                         font: myFonts,
                       ),
                       RtitleRow(
                         dataUsers: dataUser,
                         text: 'Lokasi Kerja',
-                        dataValue: 'address',
+                        dataValue: 'Gateway Cikarang',
                         font: myFonts,
                       ),
                       pw.SizedBox(height: 10),
@@ -267,8 +264,7 @@ class AdminUserPresenceHistoryController extends GetxController {
       Uint8List bytes = await pdf.save();
 
       final dir = await getApplicationDocumentsDirectory();
-      final filePath = File(
-          '${dir.path}/${nowFormat}_ExportPDF_${dataUser[0]['fullname']}.pdf');
+      final filePath = File('${dir.path}/${nowFormat}_ExportPDF_${dataUser[0]['fullname']}.pdf');
 
       await filePath.writeAsBytes(bytes);
 
@@ -318,7 +314,7 @@ class AdminUserPresenceHistoryController extends GetxController {
           style: boldFontStyle,
         ),
         pw.Text(
-          dataUsers[0][dataValue],
+          dataValue,
           style: boldFontStyle,
         ),
       ],

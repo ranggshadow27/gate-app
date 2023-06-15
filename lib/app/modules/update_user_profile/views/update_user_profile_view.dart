@@ -1,6 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:gate/app/components/colors.dart';
+import 'package:gate/app/components/fonts.dart';
+import 'package:gate/app/components/widgets/appbar.dart';
+import 'package:gate/app/components/widgets/button.dart';
+import 'package:gate/app/components/widgets/text_widget.dart';
+import 'package:gate/app/components/widgets/textfield.dart';
 
 import 'package:get/get.dart';
 
@@ -17,120 +23,128 @@ class UpdateUserProfileView extends GetView<UpdateUserProfileController> {
     controller.fullnameC.text = userData['fullname'];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('UpdateUserProfileView'),
-        centerTitle: true,
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(25),
-        children: [
-          TextField(
-            controller: controller.emailC,
-            decoration: InputDecoration(
-              labelText: 'Email',
-              border: OutlineInputBorder(),
+      backgroundColor: bgColor,
+      body: SafeArea(
+        child: ListView(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          children: [
+            RAppBar(
+                onPressed: () {
+                  controller.image = null;
+                  Get.back();
+                },
+                title: "Update User Profile"),
+            SizedBox(height: 20),
+            RText(
+              text: "Username.",
+              textStyle: interSemiBold,
+              textAlign: TextAlign.start,
             ),
-          ),
-          SizedBox(height: 20),
-          TextField(
-            controller: controller.nipC,
-            decoration: InputDecoration(
-              labelText: 'NIP',
-              border: OutlineInputBorder(),
+            SizedBox(height: 10),
+            RTextField(hintText: 'Username', controller: controller.fullnameC),
+            SizedBox(height: 20),
+            RText(
+              text: "Avatar.",
+              textStyle: interSemiBold,
+              textAlign: TextAlign.start,
             ),
-          ),
-          SizedBox(height: 20),
-          TextField(
-            controller: controller.fullnameC,
-            decoration: InputDecoration(
-              labelText: 'Username',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          SizedBox(height: 20),
-          TextField(
-            controller: controller.gradeC,
-            decoration: InputDecoration(
-              labelText: 'Grade',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          SizedBox(height: 20),
-          Text("Avatar"),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GetBuilder<UpdateUserProfileController>(
-                builder: (controller) {
-                  if (controller.image != null) {
-                    return ClipOval(
-                      child: SizedBox(
-                        height: 100,
-                        width: 100,
-                        child: Image.file(
-                          File(controller.image!.path),
-                          fit: BoxFit.cover,
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GetBuilder<UpdateUserProfileController>(
+                  builder: (controller) {
+                    if (controller.image != null) {
+                      return ClipOval(
+                        child: SizedBox(
+                          height: 100,
+                          width: 100,
+                          child: Image.file(
+                            File(controller.image!.path),
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                      ),
-                    );
-                  } else {
-                    if (userData['avatar'] != null) {
-                      return Row(
-                        children: [
-                          ClipOval(
-                            child: SizedBox(
-                              height: 100,
-                              width: 100,
-                              child: Image.network(
-                                userData['avatar'],
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Obx(
-                            () => TextButton(
-                              onPressed: () {
-                                controller.deleteAvatar();
-                              },
-                              child: controller.isAvatarDelete.isFalse
-                                  ? Text("X")
-                                  : SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(),
-                                    ),
-                            ),
-                          ),
-                        ],
                       );
                     } else {
-                      return Text("Tidak ada avatar");
+                      if (userData['avatar'] != null) {
+                        return Row(
+                          children: [
+                            ClipOval(
+                              child: SizedBox(
+                                height: 100,
+                                width: 100,
+                                child: Image.network(
+                                  userData['avatar'],
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Obx(
+                              () => TextButton(
+                                onPressed: () {
+                                  controller.deleteAvatar();
+                                },
+                                child: controller.isAvatarDelete.isFalse
+                                    ? RText(
+                                        text: "X",
+                                        textStyle: interSemiBold,
+                                        color: redColor,
+                                        textAlign: TextAlign.start,
+                                      )
+                                    : SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(),
+                                      ),
+                              ),
+                            ),
+                          ],
+                        );
+                      } else {
+                        return RText(
+                          text: "No Avatar.",
+                          textStyle: interSemiBold,
+                          textAlign: TextAlign.start,
+                        );
+                      }
                     }
+                  },
+                ),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    side: BorderSide(color: borderColor),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () {
+                    controller.getImage();
+                  },
+                  child: RText(
+                    color: greenColor,
+                    isUnderlined: true,
+                    text: "Choose file.",
+                    textStyle: interSemiBold,
+                    textAlign: TextAlign.start,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Obx(
+              () => RButton(
+                color: greenColor,
+                text: controller.isLoading.isFalse ? "Update Profile." : "Loading..",
+                callback: () async {
+                  if (controller.isLoading.isFalse) {
+                    await controller.updateProfile();
                   }
                 },
               ),
-              TextButton(
-                onPressed: () {
-                  controller.getImage();
-                },
-                child: Text("Choose file"),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          Obx(
-            () => ElevatedButton(
-              onPressed: () async {
-                if (controller.isLoading.isFalse) {
-                  await controller.updateProfile();
-                }
-              },
-              child: Text(
-                controller.isLoading.isFalse ? "Update Profile." : "Loading..",
-              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
