@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gate/app/components/widgets/custom_snackbar.dart';
 import 'package:get/get.dart';
 
 class PayrollController extends GetxController {
@@ -9,6 +10,7 @@ class PayrollController extends GetxController {
   String? startDate;
   String endDate = DateTime.now().toIso8601String();
 
+  Map<String, dynamic>? userInfo;
   Map<String, dynamic>? userSalary;
   var dataPresence = [].obs;
   var dataOvertime = [].obs;
@@ -18,15 +20,20 @@ class PayrollController extends GetxController {
     required DateTime getEndDate,
   }) {
     startDate = getStartDate.toIso8601String();
-    endDate = getEndDate
-        .add(Duration(hours: 23, minutes: 59, seconds: 59))
-        .toIso8601String();
+    endDate = getEndDate.add(Duration(hours: 23, minutes: 59, seconds: 59)).toIso8601String();
+  }
+
+  Future<Map<String, dynamic>?> getUserInfo() async {
+    String uid = auth.currentUser!.uid;
+
+    userInfo = await firestore.collection('users').doc(uid).get().then((value) => value.data());
+
+    print(userInfo);
+    return userInfo;
   }
 
   Future<Map<String, dynamic>?> getUserSalary() async {
     String uid = auth.currentUser!.uid;
-
-    Map<String, dynamic>? userSalary;
 
     DocumentSnapshot<Map<String, dynamic>> snapshotSalary =
         await firestore.collection('salary').doc(uid).get();
@@ -61,11 +68,14 @@ class PayrollController extends GetxController {
     dataOvertime.value = snapshotOvertime.docs.map((e) => e.data()).toList();
 
     Get.back();
-    Get.snackbar('Gas', "datanya ada --------> ${dataPresence.length}");
+    Get.showSnackbar(
+      buildSnackSuccess("Data generated successfully, Here is your possible salary"),
+    );
   }
 
   Future<void> getUserPayroll() async {
     userSalary = await getUserSalary();
+    userInfo = await getUserInfo();
     await getUserPresence();
   }
 }

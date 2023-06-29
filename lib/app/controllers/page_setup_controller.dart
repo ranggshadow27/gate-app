@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:gate/app/components/colors.dart';
 import 'package:gate/app/components/fonts.dart';
 import 'package:gate/app/components/widgets/button.dart';
+import 'package:gate/app/components/widgets/custom_icon.dart';
 import 'package:gate/app/components/widgets/custom_snackbar.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -16,6 +17,7 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:ntp/ntp.dart';
+import 'package:uicons/uicons.dart';
 
 import '../components/widgets/text_widget.dart';
 import '../routes/app_pages.dart';
@@ -58,7 +60,7 @@ class PageSetupController extends GetxController {
 
         // await doPresence(presenceType: "normal");
 
-        await pickImage();
+        await pickImage(presenceType: 'normal');
         break;
 
       case 3:
@@ -84,7 +86,7 @@ class PageSetupController extends GetxController {
             padding: EdgeInsets.all(35),
             child: Column(
               children: [
-                Text("Loading ..."),
+                RText(text: "Loading ...", textStyle: interMedium, color: bgColor),
                 SizedBox(height: 20),
                 Center(child: CircularProgressIndicator()),
               ],
@@ -95,7 +97,7 @@ class PageSetupController extends GetxController {
     );
   }
 
-  pickImage() async {
+  pickImage({required String presenceType}) async {
     image = await imagePicker.pickImage(
       source: ImageSource.camera,
       imageQuality: 50,
@@ -115,7 +117,7 @@ class PageSetupController extends GetxController {
 
         if (face.isNotEmpty) {
           // showLoading();
-          await doPresence(presenceType: 'normal');
+          await doPresence(presenceType: presenceType);
         } else {
           Get.defaultDialog(
             barrierDismissible: false,
@@ -184,7 +186,7 @@ class PageSetupController extends GetxController {
       // accessing the position and request users of the
       // App to enable the location services.
       return {
-        "message": "Mohon untuk mengaktifkan lokasi device.",
+        "message": "Location services are disabled, Please enabled device location.",
         "isError": true,
       };
       // return Future.error('Location services are disabled.');
@@ -200,7 +202,7 @@ class PageSetupController extends GetxController {
         // returned true. According to Android guidelines
         // your App should show an explanatory UI now.
         return {
-          "message": "Mohon untuk mengizinkan akses lokasi device saat ini.",
+          "message": "Location permissions are denied, Please give access to continue.",
           "isError": true,
         };
         // return Future.error('Location permissions are denied');
@@ -210,8 +212,7 @@ class PageSetupController extends GetxController {
     if (permission == LocationPermission.deniedForever) {
       // Permissions are denied forever, handle appropriately.
       return {
-        "message":
-            "Akses lokasi untuk aplikasi ini ditolak permanen, mohon untuk mengizinkan akses lokasi pada pengaturan device anda.",
+        "message": 'Location permissions are permanently denied, we cannot request permissions.',
         "isError": true,
       };
       // return Future.error(
@@ -227,7 +228,7 @@ class PageSetupController extends GetxController {
 
     return {
       "position": currentPosition,
-      "message": "Berhasil",
+      "message": "Success",
       "isError": false,
     };
   }
@@ -260,8 +261,7 @@ class PageSetupController extends GetxController {
         timeout: Duration(seconds: 5),
       );
 
-      // String lastestDevice = await getUserLastestDevice();
-      // Map<String, dynamic> deviceInfo = await getDeviceInfo();
+      Map<String, dynamic> deviceInfo = await getDeviceInfo();
 
       if (positionResponse["isError"] != true) {
         Position position = positionResponse["position"];
@@ -294,6 +294,7 @@ class PageSetupController extends GetxController {
             getPosition: position,
             getDistance: distance,
             collectionString: "presence",
+            deviceModel: deviceInfo['model'],
             now: now,
           );
         }
@@ -304,6 +305,7 @@ class PageSetupController extends GetxController {
             getPosition: position,
             getDistance: distance,
             collectionString: "overtime",
+            deviceModel: deviceInfo['model'],
             now: now,
           );
         }
@@ -324,6 +326,7 @@ class PageSetupController extends GetxController {
     required String getAddress,
     required double getDistance,
     required String collectionString,
+    required String deviceModel,
     required DateTime now,
   }) async {
     String uid = auth.currentUser!.uid;
@@ -418,8 +421,8 @@ class PageSetupController extends GetxController {
     if (getDistance > 50.0) {
       return Get.defaultDialog(
         title: "Error",
-        middleText:
-            "Tidak dapat melakukan absensi karena lokasi anda saat ini terlalu jauh dengan lokasi kantor.",
+        middleText: "Failed to do presence, because your device location too far from the office.",
+        middleTextStyle: interRegular,
       );
     }
 
@@ -434,32 +437,15 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         dateID: dateID,
+
         //
         overtimeDesc: overtimeTextC.text,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
-      );
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: dateID,
-            //
-            overtimeDesc: overtimeTextC.text,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} out ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -473,33 +459,14 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         dateID: dateID,
         //
         overtimeDesc: overtimeTextC.text,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: dateID,
-            //
-            overtimeDesc: overtimeTextC.text,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} in ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -512,10 +479,13 @@ class PageSetupController extends GetxController {
         now: now,
         getPosition: getPosition,
         getAddress: getAddress,
+        deviceModel: deviceModel,
         inArea: inArea,
         dateID: dateID,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} out ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
+        //
+        overtimeTotal: getMinutesDiff,
       );
     }
 
@@ -523,7 +493,8 @@ class PageSetupController extends GetxController {
         // getYesterdayData.exists &&
         getTodayData.exists &&
             dataToday?["pulang"] != null &&
-            todayDuplicateData?['pulang'] == null) {
+            todayDuplicateData != null &&
+            todayDuplicateData['pulang'] == null) {
       print("//---------------->Lanjut Shift Pulang.");
 
       return await buildConfirmDialog(
@@ -531,75 +502,77 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         dateID: duplicateDateIdOut,
         //
         overtimeTotal: getMinutesDiff,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} out ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
 
-      if (!getYesterdayData.exists &&
-          dataToday?["pulang"] != null &&
-          // todayDuplicateData?['pulang'] != null &&
-          duplicateDate.docs.length < 3) {
-        print("//---------------->Lanjut Shift Masuk.");
+      // if (!getYesterdayData.exists &&
+      //     dataToday?["pulang"] != null &&
+      //     // todayDuplicateData?['pulang'] != null &&
+      //     duplicateDate.docs.length < 3) {
+      //   print("//---------------->Lanjut Shift Masuk.");
 
-        return await buildConfirmDialog(
-          type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
-          collectionRef: collectionRef,
-          getAddress: getAddress,
-          getPosition: getPosition,
-          inArea: inArea,
-          now: now,
-          dateID: duplicateDateId,
-          //
-          overtimeDesc: overtimeTextC.text,
-          middleText:
-              "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk kembali?",
-        );
+      //   return await buildConfirmDialog(
+      //     type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
+      //     collectionRef: collectionRef,
+      //     getAddress: getAddress,
+      //     getPosition: getPosition,
+      //     deviceModel: deviceModel,
+      //     inArea: inArea,
+      //     now: now,
+      //     dateID: duplicateDateId,
+      //     //
+      //     overtimeDesc: overtimeTextC.text,
+      //     middleText:
+      //         "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk kembali?",
+      //   );
 
-        return await Get.defaultDialog(
-          title: "Konfirmasi",
-          middleText:
-              "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk kembali?",
-          actions: [
-            BackButton(),
-            ConfirmButton(
-              type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
-              collectionRef: collectionRef,
-              getAddress: getAddress,
-              getPosition: getPosition,
-              inArea: inArea,
-              now: now,
-              dateID: duplicateDateId,
-              //
-              overtimeDesc: overtimeTextC.text,
-            ),
-          ],
-        );
-      }
+      //   return await Get.defaultDialog(
+      //     title: "Konfirmasi",
+      //     middleText:
+      //         "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk kembali?",
+      //     actions: [
+      //       BackButton(),
+      //       ConfirmButton(
+      //         type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
+      //         collectionRef: collectionRef,
+      //         getAddress: getAddress,
+      //         getPosition: getPosition,
+      //         inArea: inArea,
+      //         now: now,
+      //         dateID: duplicateDateId,
+      //         //
+      //         overtimeDesc: overtimeTextC.text,
+      //       ),
+      //     ],
+      //   );
+      // }
 
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Pulang" : "Lembur Pulang",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: duplicateDateIdOut,
-            //
-            overtimeTotal: getMinutesDiff,
-          ),
-        ],
-      );
+      // return await Get.defaultDialog(
+      //   title: "Konfirmasi",
+      //   middleText:
+      //       "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
+      //   actions: [
+      //     BackButton(),
+      //     ConfirmButton(
+      //       type: collectionString == "presence" ? "Pulang" : "Lembur Pulang",
+      //       collectionRef: collectionRef,
+      //       getAddress: getAddress,
+      //       getPosition: getPosition,
+      //       inArea: inArea,
+      //       now: now,
+      //       dateID: duplicateDateIdOut,
+      //       //
+      //       overtimeTotal: getMinutesDiff,
+      //     ),
+      //   ],
+      // );
     }
 
     if (!getYesterdayData.exists && getTodayData.exists && dataToday?["pulang"] == null) {
@@ -611,33 +584,14 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         dateID: dateID,
         //
         overtimeTotal: getMinutesDiff,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Pulang" : "Lembur Pulang",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: dateID,
-            //
-            overtimeTotal: getMinutesDiff,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} out ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -650,29 +604,12 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         yesterdayID: yesterdayID,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: "Shift 3 Pulang",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            yesterdayID: yesterdayID,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} out ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -693,33 +630,14 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         dateID: duplicateDateId,
         //
         overtimeDesc: overtimeTextC.text,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk kembali?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk kembali?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: duplicateDateId,
-            //
-            overtimeDesc: overtimeTextC.text,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} in again ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -741,33 +659,14 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         dateID: duplicateDateIdOut,
         //
         overtimeTotal: getMinutesDiff,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Pulang" : "Lembur Pulang",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: duplicateDateIdOut,
-            //
-            overtimeTotal: getMinutesDiff,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} out ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -787,33 +686,14 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         dateID: dateID,
         //
         overtimeTotal: getMinutesDiff,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Pulang" : "Lembur Pulang",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: dateID,
-            //
-            overtimeTotal: getMinutesDiff,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} out ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -829,33 +709,14 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         dateID: dateID,
         //
         overtimeDesc: overtimeTextC.text,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: dateID,
-            //
-            overtimeDesc: overtimeTextC.text,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} in ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -868,33 +729,14 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         dateID: dateID,
         //
         overtimeDesc: overtimeTextC.text,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: dateID,
-            //
-            overtimeDesc: overtimeTextC.text,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} in ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -911,33 +753,14 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         dateID: dateID,
         //
         overtimeDesc: overtimeTextC.text,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} masuk?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Masuk" : "Lembur Masuk",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: dateID,
-            //
-            overtimeDesc: overtimeTextC.text,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} in ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -953,29 +776,12 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
         inArea: inArea,
         now: now,
         yesterdayID: yDuplicateDateIdOut,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: "Shift 3 Pulang",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            yesterdayID: yDuplicateDateIdOut,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} out ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
@@ -992,39 +798,21 @@ class PageSetupController extends GetxController {
         collectionRef: collectionRef,
         getAddress: getAddress,
         getPosition: getPosition,
+        deviceModel: deviceModel,
+
         inArea: inArea,
         now: now,
         dateID: dateID,
         //
         overtimeDesc: overtimeTextC.text,
         middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-      );
-
-      return await Get.defaultDialog(
-        title: "Konfirmasi",
-        middleText:
-            "Apakah anda ingin mengisi ${collectionString == "presence" ? "absensi" : "lembur"} pulang?",
-        actions: [
-          BackButton(),
-          ConfirmButton(
-            type: collectionString == "presence" ? "Pulang" : "Lembur Pulang",
-            collectionRef: collectionRef,
-            getAddress: getAddress,
-            getPosition: getPosition,
-            inArea: inArea,
-            now: now,
-            dateID: dateID,
-            //
-            overtimeDesc: overtimeTextC.text,
-          ),
-        ],
+            "Are you sure to do ${collectionString == "presence" ? "normal presence" : "overtime"} out ${collectionString == "overtime" ? "with reason ${overtimeTextC.text} " : ""}?",
       );
     }
 
     return Get.defaultDialog(
       title: "Error",
-      middleText: "Hari ini sudah melakukan 3 kali absensi, tidak dapat melakukan absensi kembali.",
+      middleText: "You have doing presence 3 times today, Can't do presence any more.",
     );
   }
 
@@ -1059,7 +847,7 @@ class PageSetupController extends GetxController {
     if (presenceType == "Lembur Pulang") {
       fileName = "pulang";
       String folderName = "overtime";
-      return storageRef = storage.ref('user_presence/$uid/$folderName/$dateID/$fileName');
+      storageRef = storage.ref('user_presence/$uid/$folderName/$dateID/$fileName');
     }
 
     if (presenceType == "Lembur Masuk") {
@@ -1146,6 +934,7 @@ class PageSetupController extends GetxController {
     required String getAddress,
     required bool inArea,
     required String middleText,
+    required String deviceModel,
     final String? dateID,
     final String? yesterdayID,
     final String? overtimeTotal,
@@ -1155,7 +944,7 @@ class PageSetupController extends GetxController {
       barrierDismissible: false,
       Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(20.0),
         ),
         child: IntrinsicHeight(
           child: Container(
@@ -1171,12 +960,20 @@ class PageSetupController extends GetxController {
                   ),
                 ),
                 SizedBox(height: 20),
-                Icon(Icons.check),
-                Text("Wajah terdeteksi"),
+                RIcon(
+                  icon: UIcons.boldRounded.check,
+                  color: greenColor,
+                ),
+                RText(
+                  text: "Face Detected",
+                  textStyle: interSemiBold,
+                  color: bgColor,
+                ),
                 Divider(),
-                Text(
-                  middleText,
-                  textAlign: TextAlign.center,
+                RText(
+                  text: middleText,
+                  textStyle: interRegular,
+                  color: bgColor,
                 ),
                 SizedBox(height: 20),
                 Row(
@@ -1184,6 +981,7 @@ class PageSetupController extends GetxController {
                   children: [
                     BackButton(),
                     ConfirmButton(
+                      device: deviceModel,
                       type: type,
                       collectionRef: collectionRef,
                       getAddress: getAddress,
@@ -1212,6 +1010,7 @@ class PageSetupController extends GetxController {
     required Position getPosition,
     required bool inArea,
     required DateTime now,
+    required String device,
     String? dateID,
     String? yesterdayID,
     String? overtimeTotal,
@@ -1224,18 +1023,19 @@ class PageSetupController extends GetxController {
         "longitude": getPosition.longitude,
         "address": getAddress,
         "inArea": inArea,
+        "device": device,
       }
     };
 
     Map<String, dynamic> queryMasuk = {
       "date": now.toIso8601String(),
-      "status": "normal",
       "masuk": {
         "datetime": now.toIso8601String(),
         "latitude": getPosition.latitude,
         "longitude": getPosition.longitude,
         "address": getAddress,
         "inArea": inArea,
+        "device": device,
       }
     };
 
@@ -1248,7 +1048,7 @@ class PageSetupController extends GetxController {
 
           Get.back();
           Get.back();
-          Get.snackbar("Berhasil", "Anda sudah melakukan absensi Pulang.");
+          Get.showSnackbar(buildSnackSuccess("Normal Presence Out has been done successfully"));
         };
       }
 
@@ -1256,11 +1056,12 @@ class PageSetupController extends GetxController {
         return () async {
           showLoading();
           await uploadImage(presenceType: type, dateID: dateID, query: queryMasuk);
+          queryMasuk['status'] = 'normal';
           await collectionRef.doc(dateID).set(queryMasuk);
 
           Get.back();
           Get.back();
-          Get.snackbar("Berhasil", "Anda sudah melakukan absensi Masuk.");
+          Get.showSnackbar(buildSnackSuccess("Normal Presence In has been done successfully"));
         };
       }
 
@@ -1272,7 +1073,7 @@ class PageSetupController extends GetxController {
 
           Get.back();
           Get.back();
-          Get.snackbar("Berhasil", "Anda sudah melakukan absensi Pulang.");
+          Get.showSnackbar(buildSnackSuccess("Normal Presence Out has been done successfully"));
         };
       }
 
@@ -1281,11 +1082,12 @@ class PageSetupController extends GetxController {
           showLoading();
           await uploadImage(presenceType: type, dateID: dateID, query: queryMasuk);
           queryMasuk['description'] = overtimeDesc;
+          queryMasuk['status'] = 'overtime';
           await collectionRef.doc(dateID).set(queryMasuk);
 
           Get.back();
           Get.back();
-          Get.snackbar("Berhasil", "Anda sudah melakukan Lembur Masuk.");
+          Get.showSnackbar(buildSnackSuccess("Overtime In has been done successfully"));
         };
       }
 
@@ -1298,26 +1100,24 @@ class PageSetupController extends GetxController {
 
           Get.back();
           Get.back();
-          Get.snackbar("Berhasil", "Anda sudah melakukan Lembur Pulang.");
+          Get.showSnackbar(buildSnackSuccess("Overtime Out has been done successfully"));
         };
       }
-
-      // type == "Pulang"
-      //     ?
-      //     : type == "Masuk"
-      //         ?
-      //         : type == "Shift 3 Pulang"
-      //             ?
-      //             : type == "Lembur Masuk"
-      //                 ?
-      //                 : type == "Lembur Pulang"
-      //                     ?
-      //                     : () => print("else");
     }
 
     return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        fixedSize: Size(100, 50),
+        backgroundColor: greenColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
       onPressed: presenceLogic(queryMasuk, queryPulang),
-      child: Text("Confirm"),
+      child: RText(
+        text: "Confirm",
+        textStyle: interMedium,
+      ),
     );
   }
 }
@@ -1334,8 +1134,17 @@ class BackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        fixedSize: Size(100, 50),
+        side: BorderSide(color: bgColor),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
       onPressed: () => Get.back(),
-      child: Text("Back"),
+      child: RText(
+        text: "Back",
+        textStyle: interMedium,
+        color: bgColor,
+      ),
     );
   }
 }

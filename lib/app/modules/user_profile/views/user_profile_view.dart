@@ -163,7 +163,7 @@ class UserProfileView extends GetView<UserProfileController> {
                             title: "Update Profile",
                             icon: UIcons.solidRounded.user_time,
                             onTap: () => Get.toNamed(
-                              Routes.UPDATE_USER_PASSWORD,
+                              Routes.UPDATE_USER_PROFILE,
                               arguments: userData,
                             ),
                           ),

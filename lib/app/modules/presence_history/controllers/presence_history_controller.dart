@@ -88,39 +88,6 @@ class PresenceHistoryController extends GetxController {
 
       pdf.addPage(
         pw.MultiPage(
-          footer: (pw.Context context) {
-            // if (context.pageNumber < context.pagesCount) {
-            //   return pw.SizedBox();
-            // }
-
-            return pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: pw.CrossAxisAlignment.center,
-              children: [
-                RFooterPage(
-                  dataUsers: dataUser,
-                  title: "Penerima Tugas,",
-                  dataValue: '${dataUser[0]['fullname']}',
-                  grade: "${dataUser[0]['grade']}",
-                  font: myFonts['bold'],
-                ),
-                RFooterPage(
-                  dataUsers: dataUser,
-                  title: "Pemberi Tugas,",
-                  dataValue: "Sifaudin",
-                  grade: "GO Supervisor",
-                  font: myFonts['bold'],
-                ),
-                RFooterPage(
-                  dataUsers: dataUser,
-                  title: "Menyetujui,",
-                  dataValue: "Eko Cahyo P.",
-                  grade: "Gateway Manager",
-                  font: myFonts['bold'],
-                ),
-              ],
-            );
-          },
           pageFormat: PdfPageFormat.a4,
           build: (pw.Context context) {
             return [
@@ -215,6 +182,39 @@ class PresenceHistoryController extends GetxController {
                 ],
               ),
             ];
+          },
+          footer: (pw.Context context) {
+            // if (context.pageNumber < context.pagesCount) {
+            //   return pw.SizedBox();
+            // }
+
+            return pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                RFooterPage(
+                  dataUsers: dataUser,
+                  title: "Penerima Tugas,",
+                  dataValue: '${dataUser[0]['fullname']}',
+                  grade: "${dataUser[0]['grade']}",
+                  font: myFonts['bold'],
+                ),
+                RFooterPage(
+                  dataUsers: dataUser,
+                  title: "Pemberi Tugas,",
+                  dataValue: "Sifaudin",
+                  grade: "GO Supervisor",
+                  font: myFonts['bold'],
+                ),
+                RFooterPage(
+                  dataUsers: dataUser,
+                  title: "Menyetujui,",
+                  dataValue: "Eko Cahyo P.",
+                  grade: "Gateway Manager",
+                  font: myFonts['bold'],
+                ),
+              ],
+            );
           },
         ),
       );

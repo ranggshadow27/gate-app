@@ -296,7 +296,9 @@ class RLastPresenceBoard extends StatelessWidget {
                 ),
                 SizedBox(height: 4),
                 RText(
-                  text: "HUAWEI INE-LX2",
+                  text: getHistoryData['masuk']['device'] != null
+                      ? getHistoryData['masuk']['device']
+                      : "NO DEVICE",
                   textStyle: interRegular,
                   fontSize: 10.0,
                   color: whiteColor.withOpacity(.6),
@@ -394,7 +396,7 @@ class RPresenceBoard extends StatelessWidget {
             text: getTodayData?[presenceType] == null
                 ? "-"
                 : DateFormat("hh.mm a")
-                    .format(DateTime.parse(getTodayData!['presenceType']['datetime'])),
+                    .format(DateTime.parse(getTodayData![presenceType]['datetime'])),
             textStyle: interRegular,
             fontSize: 20.0,
           ),
@@ -495,7 +497,7 @@ class ROvertimeDialog extends StatelessWidget {
                               ),
                             ),
                           );
-                          pageController.doPresence(presenceType: "overtime");
+                          pageController.pickImage(presenceType: "overtime");
                         }
                       }
                     },

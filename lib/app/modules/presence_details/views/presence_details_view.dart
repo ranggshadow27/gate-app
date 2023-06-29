@@ -153,6 +153,7 @@ class PresenceDetailBox extends StatelessWidget {
               text:
                   "${DateFormat('hh:mm a').format(DateTime.parse(getUserHistory[presenceType]['datetime']))}",
               textStyle: interSemiBold,
+              fontSize: 12.0,
             ),
           ],
         ),
@@ -162,10 +163,17 @@ class PresenceDetailBox extends StatelessWidget {
             RText(text: "Device.", textStyle: interRegular),
             Spacer(),
             RText(
-              text: getUserHistory[presenceType]['inArea'] ? "In Area" : "Out of Area.",
+              text: getUserHistory[presenceType]['device'] != null
+                  ? getUserHistory[presenceType]['device']
+                  : "NO DEVICE",
               textStyle: interSemiBold,
-              color: getUserHistory[presenceType]['inArea'] ? greenColor : redColor,
+              fontSize: 12.0,
             ),
+            // RText(
+            //   text: getUserHistory[presenceType]['inArea'] ? "In Area" : "Out of Area.",
+            //   textStyle: interSemiBold,
+            //   color: getUserHistory[presenceType]['inArea'] ? greenColor : redColor,
+            // ),
           ],
         ),
         SizedBox(height: 14),
@@ -183,6 +191,7 @@ class PresenceDetailBox extends StatelessWidget {
             text: getUserHistory[presenceType]['address'],
             textStyle: interSemiBold,
             textAlign: TextAlign.start,
+            fontSize: 12.0,
           ),
         ),
         SizedBox(height: 14),

@@ -95,8 +95,11 @@ class HomeController extends GetxController {
   }
 
   getTodayDate() async {
-    DateTime ntpNow = await NTP.now();
-    realTimeDate.value = DateFormat("EEEE, dd MMMM yyyy").format(await NTP.now());
+    DateTime ntpNow = await NTP.now(
+      lookUpAddress: "time.windows.com",
+      timeout: Duration(seconds: 5),
+    );
+    realTimeDate.value = DateFormat("EEEE, dd MMMM yyyy").format(ntpNow);
     realTimeHour.value = DateFormat("hh:mm:ss a").format(ntpNow);
 
     timer = Timer(Duration(seconds: 1), () {
@@ -106,9 +109,19 @@ class HomeController extends GetxController {
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> getUserTodayPresence() async* {
     String uid = auth.currentUser!.uid;
-    String dateToday = DateFormat('dd-MM-yyyy').format(await NTP.now());
+    String dateToday = DateFormat('dd-MM-yyyy').format(
+      await NTP.now(
+        lookUpAddress: "time.windows.com",
+        timeout: Duration(seconds: 5),
+      ),
+    );
 
-    yield* firestore.collection('users').doc(uid).collection('presence').doc(dateToday).snapshots();
+    yield* await firestore
+        .collection('users')
+        .doc(uid)
+        .collection('presence')
+        .doc(dateToday)
+        .snapshots();
   }
 
   showLoading() {
