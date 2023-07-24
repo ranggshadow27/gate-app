@@ -7,6 +7,7 @@ import 'package:gate/app/components/widgets/text_widget.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import '../../../components/widgets/loading_widget.dart';
 import '../controllers/dispensation_details_controller.dart';
 
 class DispensationDetailsView extends GetView<DispensationDetailsController> {
@@ -131,7 +132,7 @@ Widget buildLoadingWidget() {
   return Center(
     child: Column(
       children: [
-        CircularProgressIndicator(),
+        RLoading(),
         SizedBox(height: 10),
         RText(
           text: "Loading Image..",

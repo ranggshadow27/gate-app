@@ -4,6 +4,7 @@ import 'package:gate/app/components/fonts.dart';
 import 'package:gate/app/components/widgets/appbar.dart';
 import 'package:gate/app/components/widgets/custom_icon.dart';
 import 'package:gate/app/components/widgets/custom_snackbar.dart';
+import 'package:gate/app/components/widgets/snackbar_logic.dart';
 
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +16,7 @@ import '../controllers/payroll_controller.dart';
 
 class PayrollView extends GetView<PayrollController> {
   final controller = Get.put(PayrollController());
+  final count = 0.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +34,7 @@ class PayrollView extends GetView<PayrollController> {
                 textStyle: interMedium,
               ),
             ),
+            SizedBox(height: 10),
             SizedBox(height: 10),
             Container(
               width: MediaQuery.of(context).size.width,

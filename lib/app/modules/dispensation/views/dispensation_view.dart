@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:uicons/uicons.dart';
 
+import '../../../components/widgets/loading_widget.dart';
 import '../../../components/widgets/text_widget.dart';
 import '../controllers/dispensation_controller.dart';
 
@@ -30,7 +31,10 @@ class DispensationView extends GetView<DispensationController> {
               stream: controller.streamDispensationData(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return Container(
+                    height: Get.height,
+                    child: Center(child: RLoading()),
+                  );
                 }
 
                 if (!snapshot.hasData || snapshot.data?.docs.length == 0) {

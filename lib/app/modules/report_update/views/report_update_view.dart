@@ -103,7 +103,12 @@ class ReportUpdateView extends GetView<ReportUpdateController> {
                                   children: [
                                     TextButton(
                                       onPressed: () {
-                                        controller.deleteImage(imageName, imageUrl);
+                                        controller.confirmImgDelete(
+                                          () async {
+                                            await controller.deleteImage(imageName, imageUrl);
+                                            Get.back();
+                                          },
+                                        );
                                       },
                                       child: RText(
                                         text: "Delete",
@@ -175,10 +180,15 @@ class ReportUpdateView extends GetView<ReportUpdateController> {
                                       elevation: 0,
                                     ),
                                     onPressed: () {
-                                      if (controllerAddReport.imgs.isNotEmpty) {
-                                        controllerAddReport.imgs.removeAt(index);
-                                        controllerAddReport.update();
-                                      }
+                                      controller.confirmImgDelete(
+                                        () async {
+                                          if (controllerAddReport.imgs.isNotEmpty) {
+                                            await controllerAddReport.imgs.removeAt(index);
+                                            controllerAddReport.update();
+                                          }
+                                          Get.back();
+                                        },
+                                      );
                                     },
                                     child: Icon(
                                       UIcons.solidRounded.cross_small,

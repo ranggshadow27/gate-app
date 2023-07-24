@@ -6,6 +6,7 @@ import 'package:gate/app/components/colors.dart';
 import 'package:gate/app/components/fonts.dart';
 import 'package:gate/app/components/widgets/button.dart';
 import 'package:gate/app/components/widgets/custom_snackbar.dart';
+import 'package:gate/app/components/widgets/snackbar_logic.dart';
 import 'package:get/get.dart';
 
 import '../../../controllers/page_setup_controller.dart';
@@ -47,15 +48,15 @@ class LoginController extends GetxController {
             userRole = await userCheck();
             if (userRole == null) {
               auth.signOut();
-              Get.showSnackbar(buildSnackError("User not found"));
+              limitSnackbar(buildSnackError("User not found"));
             } else {
               if (passC.text == "Pass@isip123") {
-                Get.showSnackbar(buildSnack("Change Default Password",
+                limitSnackbar(buildSnack("Change Default Password",
                     "For your account safety, please to change the default password."));
 
                 Get.offAllNamed(Routes.RESET_DEFAULT_PASSWORD);
               } else {
-                Get.showSnackbar(
+                limitSnackbar(
                   buildSnackSuccess("Login Succeed"),
                 );
 
@@ -93,11 +94,11 @@ class LoginController extends GetxController {
                       );
                       await userCredential.user!.sendEmailVerification();
                       Get.back();
-                      Get.showSnackbar(buildSnackSuccess(
+                      limitSnackbar(buildSnackSuccess(
                           "Verification Mail has been sent, please check your inbox/spam"));
                     } catch (e) {
                       Get.back();
-                      Get.showSnackbar(
+                      limitSnackbar(
                           buildSnackError("Failed to send the verification mail, err ${e}"));
                     } finally {
                       isSentVerification.value = false;
@@ -110,20 +111,20 @@ class LoginController extends GetxController {
         }
       } on FirebaseAuthException catch (e) {
         if (e.code == "user-not-found") {
-          Get.showSnackbar(buildSnackError("User not found"));
+          limitSnackbar(buildSnackError("User not found"));
         } else if (e.code == "wrong-password") {
-          Get.showSnackbar(buildSnackError("Please check your email&password"));
+          limitSnackbar(buildSnackError("Please check your email&password"));
         } else {
-          Get.showSnackbar(buildSnackError("Login Failed, err ${e.code}"));
+          limitSnackbar(buildSnackError("Login Failed, err ${e.code}"));
         }
       } catch (e) {
         print("${e}");
-        Get.showSnackbar(buildSnackError("Login Failed, err ${e}"));
+        limitSnackbar(buildSnackError("Login Failed, err ${e}"));
       } finally {
         isLoading.value = false;
       }
     } else {
-      Get.showSnackbar(buildSnackError("Please fill all required field"));
+      limitSnackbar(buildSnackError("Please fill all required field"));
     }
   }
 }

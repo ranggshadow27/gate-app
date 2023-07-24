@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gate/app/components/widgets/custom_snackbar.dart';
+import 'package:gate/app/components/widgets/snackbar_logic.dart';
 import 'package:get/get.dart';
 
 class UpdateUserPasswordController extends GetxController {
@@ -30,27 +31,27 @@ class UpdateUserPasswordController extends GetxController {
             await auth.currentUser!.updatePassword(confirmPassC.text);
 
             Get.back();
-            Get.showSnackbar(buildSnackSuccess("Password updated successfully"));
+            limitSnackbar(buildSnackSuccess("Password updated successfully"));
           } on FirebaseAuthException catch (e) {
             if (e.code == "weak-password") {
-              Get.showSnackbar(buildSnackError("Password to short"));
+              limitSnackbar(buildSnackError("Password to short"));
             } else if (e.code == "weak-password") {
-              Get.showSnackbar(buildSnackError("Password to weak, type at least 6 characters"));
+              limitSnackbar(buildSnackError("Password to weak, type at least 6 characters"));
             } else {
-              Get.showSnackbar(buildSnackError("Failed to update password, err: ${e.code}"));
+              limitSnackbar(buildSnackError("Failed to update password, err: ${e.code}"));
             }
           } finally {
             isLoading.value = false;
           }
         } else {
-          Get.showSnackbar(buildSnackError("New Password doesnt match"));
+          limitSnackbar(buildSnackError("New Password doesnt match"));
         }
       } else {
-        Get.showSnackbar(
+        limitSnackbar(
             buildSnackError("Default password is not allowed, please change to other password"));
       }
     } else {
-      Get.showSnackbar(buildSnackError("Please fill all required fields"));
+      limitSnackbar(buildSnackError("Please fill all required fields"));
     }
   }
 }

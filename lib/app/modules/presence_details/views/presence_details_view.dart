@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:gate/app/components/colors.dart';
 import 'package:gate/app/components/fonts.dart';
 import 'package:gate/app/components/widgets/appbar.dart';
+import 'package:gate/app/components/widgets/loading_widget.dart';
 
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../../components/widgets/text_widget.dart';
 import '../controllers/presence_details_controller.dart';
@@ -43,65 +45,35 @@ class PresenceDetailsView extends GetView<PresenceDetailsController> {
                     PresenceDetailBox(
                       getUserHistory: getUserHistory,
                       boxColor: greenColor,
-                      middleText: "Presence In.",
+                      middleText: "Time.",
                       title: "Presence In",
                       presenceType: 'masuk',
                     ),
-                    if (getUserHistory['pulang'] != null) Divider(color: borderColor),
-                    if (getUserHistory['pulang'] != null)
-                      PresenceDetailBox(
-                        getUserHistory: getUserHistory,
-                        boxColor: redColor,
-                        middleText: "Presence Out.",
-                        title: "Presence Out",
-                        presenceType: 'pulang',
-                      ),
-                    // Column(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     Text(""),
-                    //     Text(""),
-                    //     Text(
-                    //       getUserHistory['pulang'] != null
-                    //           ? "Pulang: ${DateFormat('hh:mm:ss a').format(DateTime.parse(getUserHistory['pulang']['datetime']))}"
-                    //           : "-",
-                    //     ),
-                    //     Text(
-                    //       getUserHistory['pulang'] != null
-                    //           ? "${getUserHistory['masuk']['address']}"
-                    //           : "-",
-                    //       textAlign: TextAlign.center,
-                    //     ),
-                    //     Text(getUserHistory['pulang'] != null
-                    //         ? "Lat: ${getUserHistory['masuk']['latitude']}"
-                    //         : "-"),
-                    //     Text(getUserHistory['pulang'] != null
-                    //         ? "Long: ${getUserHistory['masuk']['longitude']}"
-                    //         : "-"),
-                    //     Text(
-                    //       getUserHistory['pulang'] != null
-                    //           ? getUserHistory['pulang']['inArea'] == true
-                    //               ? "Didalam Area"
-                    //               : "Diluar Area"
-                    //           : "-",
-                    //     ),
-                    //     getUserHistory['pulang']['image'] != null
-                    //         ? ClipRRect(
-                    //             borderRadius: BorderRadius.circular(20),
-                    //             child: SizedBox(
-                    //               width: double.infinity,
-                    //               child: Image.network(
-                    //                 getUserHistory['pulang']['image'],
-                    //                 fit: BoxFit.cover,
-                    //               ),
-                    //             ),
-                    //           )
-                    //         : SizedBox(),
-                    //   ],
-                    // ),
                   ],
                 ),
               ),
+              if (getUserHistory['pulang'] != null) SizedBox(height: 28),
+              if (getUserHistory['pulang'] != null)
+                Container(
+                  padding: EdgeInsets.all(25),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(26),
+                    color: bgColor,
+                    border: Border.all(color: borderColor),
+                  ),
+                  child: Column(
+                    children: [
+                      if (getUserHistory['pulang'] != null)
+                        PresenceDetailBox(
+                          getUserHistory: getUserHistory,
+                          boxColor: redColor,
+                          middleText: "Time.",
+                          title: "Presence Out",
+                          presenceType: 'pulang',
+                        ),
+                    ],
+                  ),
+                ),
               SizedBox(height: 40),
             ],
           ),
@@ -127,6 +99,8 @@ class PresenceDetailBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final RxBool imageLoad = false.obs;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -157,26 +131,21 @@ class PresenceDetailBox extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 14),
+        SizedBox(height: 6),
         Row(
           children: [
             RText(text: "Device.", textStyle: interRegular),
             Spacer(),
             RText(
               text: getUserHistory[presenceType]['device'] != null
-                  ? getUserHistory[presenceType]['device']
+                  ? getUserHistory[presenceType]['device'].toString().toUpperCase()
                   : "NO DEVICE",
               textStyle: interSemiBold,
               fontSize: 12.0,
             ),
-            // RText(
-            //   text: getUserHistory[presenceType]['inArea'] ? "In Area" : "Out of Area.",
-            //   textStyle: interSemiBold,
-            //   color: getUserHistory[presenceType]['inArea'] ? greenColor : redColor,
-            // ),
           ],
         ),
-        SizedBox(height: 14),
+        SizedBox(height: 6),
         SizedBox(
           width: Get.width,
           child: RText(
@@ -185,6 +154,7 @@ class PresenceDetailBox extends StatelessWidget {
             textAlign: TextAlign.start,
           ),
         ),
+        SizedBox(height: 6),
         SizedBox(
           width: Get.width,
           child: RText(
@@ -218,37 +188,50 @@ class PresenceDetailBox extends StatelessWidget {
                         child: CachedNetworkImage(
                           imageUrl: getUserHistory[presenceType]['image'],
                           progressIndicatorBuilder: (context, url, progress) {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value: progress.progress,
-                              ),
-                            );
+                            return Center(child: RLoading());
                           },
                         ),
                       ),
                     ),
                   ),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: CachedNetworkImage(
-                    width: Get.width,
-                    height: Get.height * .3,
-                    imageUrl: getUserHistory[presenceType]['image'],
-                    fit: BoxFit.cover,
-                    progressIndicatorBuilder: (context, url, progress) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: progress.progress,
-                        ),
-                      );
-                    },
-                    errorWidget: (context, url, error) => RText(
-                      text: "Failed to Load Image.",
-                      textStyle: interMedium,
-                      color: redColor,
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: CachedNetworkImage(
+                        width: Get.width,
+                        height: Get.height * .3,
+                        imageUrl: getUserHistory[presenceType]['image'],
+                        fit: BoxFit.cover,
+                        progressIndicatorBuilder: (context, url, progress) {
+                          return Center(child: RLoading());
+                        },
+                        errorWidget: (context, url, error) {
+                          return RText(
+                            text: "Failed to Load Image.",
+                            textStyle: interMedium,
+                            color: redColor,
+                          );
+                        },
+                      ),
                     ),
-                  ),
+                    Positioned(
+                      bottom: 0,
+                      child: Container(
+                        height: 28,
+                        width: Get.width * .745,
+                        color: bgColor.withOpacity(.6),
+                        child: Center(
+                          child: RText(
+                            text: "Tap to View Full Image",
+                            fontSize: 12.0,
+                            textStyle: interMedium,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               )
             : RText(

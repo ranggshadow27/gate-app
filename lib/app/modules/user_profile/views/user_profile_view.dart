@@ -194,8 +194,12 @@ class UserProfileView extends GetView<UserProfileController> {
                       color: redColor,
                       text: "Sign Out",
                       callback: () async {
-                        await FirebaseAuth.instance.signOut();
-                        Get.offAllNamed(Routes.LOGIN);
+                        confirmLogout(
+                          () async {
+                            await FirebaseAuth.instance.signOut();
+                            Get.offAllNamed(Routes.LOGIN);
+                          },
+                        );
                       },
                     ),
                   ],
@@ -206,6 +210,37 @@ class UserProfileView extends GetView<UserProfileController> {
         ),
       ),
       bottomNavigationBar: RBottomNavigation(),
+    );
+  }
+
+  confirmLogout(
+    VoidCallback callback,
+  ) {
+    return Get.defaultDialog(
+      title: "Confirm",
+      middleText: "Are you sure to Sign Out?",
+      confirm: RButton(
+        color: redColor,
+        text: "Sign Out",
+        height: 46,
+        width: 120,
+        callback: callback,
+      ),
+      cancel: OutlinedButton(
+        onPressed: () => Get.back(),
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          side: BorderSide(color: borderColor),
+          fixedSize: Size(120, 46),
+        ),
+        child: RText(
+          text: "Cancel",
+          textStyle: interMedium,
+          color: bgColor,
+        ),
+      ),
     );
   }
 

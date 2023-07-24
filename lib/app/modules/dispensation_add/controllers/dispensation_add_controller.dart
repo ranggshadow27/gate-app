@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../components/widgets/button.dart';
+import '../../../components/widgets/snackbar_logic.dart';
 import '../../../components/widgets/text_widget.dart';
 
 class DispensationAddController extends GetxController {
@@ -24,10 +25,10 @@ class DispensationAddController extends GetxController {
 
   submitDispensation() async {
     if (dispensationType == null) {
-      return Get.showSnackbar(buildSnackError("Please select Dispensation Type"));
+      return limitSnackbar(buildSnackError("Please select Dispensation Type"));
     }
     if (subjectC.text.isEmpty || descC.text.isEmpty) {
-      return Get.showSnackbar(buildSnackError("Please fill the required fields"));
+      return limitSnackbar(buildSnackError("Please fill the required fields"));
     }
 
     Get.defaultDialog(
@@ -74,8 +75,7 @@ class DispensationAddController extends GetxController {
               Get.back();
               Get.back();
 
-              Get.showSnackbar(
-                  buildSnackSuccess("Dispensation $dispensationType successfully added"));
+              limitSnackbar(buildSnackSuccess("Dispensation $dispensationType successfully added"));
             } on FormatException catch (e) {
             } finally {
               isLoading.value = false;

@@ -13,6 +13,7 @@ import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:uicons/uicons.dart';
 
 import '../../../components/widgets/custom_icon.dart';
+import '../../../components/widgets/loading_widget.dart';
 import '../../../routes/app_pages.dart';
 import '../controllers/report_controller.dart';
 
@@ -97,8 +98,9 @@ class ReportView extends GetView<ReportController> {
                   stream: controller.getReportDatas(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: CircularProgressIndicator(),
+                      return Container(
+                        height: Get.height,
+                        child: Center(child: RLoading()),
                       );
                     }
 

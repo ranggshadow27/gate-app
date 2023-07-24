@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gate/app/components/widgets/custom_snackbar.dart';
+import 'package:gate/app/components/widgets/snackbar_logic.dart';
 import 'package:get/get.dart';
 
 class ForgotPasswordController extends GetxController {
@@ -13,19 +14,19 @@ class ForgotPasswordController extends GetxController {
       try {
         await auth.sendPasswordResetEmail(email: emailC.text);
         Get.back();
-        Get.showSnackbar(buildSnackSuccess(
+        limitSnackbar(buildSnackSuccess(
             "Reset link has been sent to your email, please check your mail inbox/spam"));
       } on FirebaseAuthException catch (e) {
         if (e.code == "user-not-found") {
-          Get.showSnackbar(buildSnackError("Email not registered"));
+          limitSnackbar(buildSnackError("Email not registered"));
         } else {
-          Get.showSnackbar(buildSnackError("Failed to send reset password link, err: ${e.code}"));
+          limitSnackbar(buildSnackError("Failed to send reset password link, err: ${e.code}"));
         }
       } finally {
         isLoading.value = false;
       }
     } else {
-      Get.showSnackbar(buildSnackError("Please fill the required field"));
+      limitSnackbar(buildSnackError("Please fill the required field"));
     }
   }
 }

@@ -8,8 +8,9 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as fStorage;
 
+import '../../../components/widgets/snackbar_logic.dart';
+
 class UpdateUserProfileController extends GetxController {
-  // FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   fStorage.FirebaseStorage storage = fStorage.FirebaseStorage.instance;
 
@@ -34,7 +35,6 @@ class UpdateUserProfileController extends GetxController {
   }
 
   Future<void> updateAvatar({required inputData}) async {
-    // String uid = auth.currentUser!.uid;
     File file = File(image!.path);
     String ext = image!.name.split(".").last;
 
@@ -46,7 +46,6 @@ class UpdateUserProfileController extends GetxController {
   }
 
   Future<void> updateProfile() async {
-    // String uid = auth.currentUser!.uid;
     Map<String, dynamic> inputData = {
       'fullname': fullnameC.text,
       "nip": nipC.text,
@@ -67,14 +66,14 @@ class UpdateUserProfileController extends GetxController {
         image = null;
 
         Get.back();
-        Get.showSnackbar(buildSnackSuccess("Profile updated successfully"));
+        limitSnackbar(buildSnackSuccess("Profile updated successfully"));
       } catch (e) {
-        Get.showSnackbar(buildSnackError("Failed to update profile, err: $e"));
+        limitSnackbar(buildSnackError("Failed to update profile, err: $e"));
       } finally {
         isLoading.value = false;
       }
     } else {
-      Get.showSnackbar(buildSnackError("Please fill the required field"));
+      limitSnackbar(buildSnackError("Please fill the required field"));
     }
   }
 
@@ -85,9 +84,9 @@ class UpdateUserProfileController extends GetxController {
         "avatar": FieldValue.delete(),
       });
       Get.back();
-      Get.showSnackbar(buildSnackSuccess("Avatar deleted"));
+      limitSnackbar(buildSnackSuccess("Avatar deleted"));
     } catch (e) {
-      Get.showSnackbar(buildSnackError("Failed to delete avatar, err: $e"));
+      limitSnackbar(buildSnackError("Failed to delete avatar, err: $e"));
     } finally {
       isAvatarDelete.value = false;
       update();

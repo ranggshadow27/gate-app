@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/get_navigation/src/snackbar/snackbar.dart';
 
 import '../colors.dart';

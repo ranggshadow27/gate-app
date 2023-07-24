@@ -53,9 +53,9 @@ class AdminDispensationsView extends GetView<AdminDispensationsController> {
                         .format(DateTime.parse(dispensationData['createdDate']));
 
                     return Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
                       child: Material(
-                        color: bgColor,
+                        color: borderColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),
                           side: BorderSide(color: borderColor),

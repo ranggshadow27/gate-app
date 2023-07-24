@@ -9,6 +9,12 @@ import 'package:gate/app/modules/report_add/controllers/report_add_controller.da
 import 'package:get/get.dart';
 import 'package:ntp/ntp.dart';
 
+import '../../../components/colors.dart';
+import '../../../components/fonts.dart';
+import '../../../components/widgets/button.dart';
+import '../../../components/widgets/snackbar_logic.dart';
+import '../../../components/widgets/text_widget.dart';
+
 class ReportUpdateController extends GetxController {
   final addImageC = Get.put(ReportAddController());
 
@@ -27,6 +33,37 @@ class ReportUpdateController extends GetxController {
 
   RxBool isUpdate = false.obs;
   RxBool isLoading = false.obs;
+
+  confirmImgDelete(
+    VoidCallback callback,
+  ) {
+    return Get.defaultDialog(
+      title: "Confirm",
+      middleText: "Are you sure to delete this image?",
+      confirm: RButton(
+        color: redColor,
+        text: "Delete",
+        height: 46,
+        width: 120,
+        callback: callback,
+      ),
+      cancel: OutlinedButton(
+        onPressed: () => Get.back(),
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          side: BorderSide(color: borderColor),
+          fixedSize: Size(120, 46),
+        ),
+        child: RText(
+          text: "Cancel",
+          textStyle: interMedium,
+          color: bgColor,
+        ),
+      ),
+    );
+  }
 
   Future<Map<String, dynamic>?> getCurrentImage() async {
     String reportID = reportData['reportID'];
@@ -120,9 +157,9 @@ class ReportUpdateController extends GetxController {
 
       await firestore.collection('operational_report').doc(reportID).update(updateData);
 
-      Get.showSnackbar(buildSnackSuccess("Report ID : ${reportID} updated successfully"));
+      limitSnackbar(buildSnackSuccess("Report ID : ${reportID} updated successfully"));
     } catch (e) {
-      Get.showSnackbar(buildSnackError("Failed to Update Report, err: $e"));
+      limitSnackbar(buildSnackError("Failed to Update Report, err: $e"));
     } finally {
       isLoading.value = false;
     }
@@ -164,9 +201,10 @@ class ReportUpdateController extends GetxController {
       f.Reference imageRef = storage.refFromURL(imgUrl);
       await imageRef.delete();
 
-      Get.snackbar("Berhasil", "Gambar dihapus");
+      limitSnackbar(buildSnackSuccess("Image deleted successfully"));
+      Get.back();
     } catch (e) {
-      Get.snackbar("Error", "Gambar gagal dihapus, err: {$e}");
+      limitSnackbar(buildSnackError("Failed to Delete Image, err: $e"));
     }
   }
 

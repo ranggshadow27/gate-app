@@ -10,6 +10,7 @@ import 'package:firebase_storage/firebase_storage.dart' as f;
 import 'package:ntp/ntp.dart';
 
 import '../../../components/widgets/custom_snackbar.dart';
+import '../../../components/widgets/snackbar_logic.dart';
 
 class ReportAddController extends GetxController {
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -114,12 +115,12 @@ class ReportAddController extends GetxController {
         images = null;
         imgs = [];
 
-        Get.showSnackbar(buildSnackSuccess("Report added succesfully"));
+        limitSnackbar(buildSnackSuccess("Report added succesfully"));
       } else {
-        Get.showSnackbar(buildSnackError("Please fill in all required fields"));
+        limitSnackbar(buildSnackError("Please fill in all required fields"));
       }
     } catch (e) {
-      Get.showSnackbar(buildSnackError("Failed to Add Report /n err:$e"));
+      limitSnackbar(buildSnackError("Failed to Add Report /n err:$e"));
     } finally {
       isLoading.value = false;
     }
@@ -168,9 +169,9 @@ class ReportAddController extends GetxController {
         reportCategory = null;
         newTypeC.clear();
 
-        Get.showSnackbar(buildSnackSuccess("Item added succesfully"));
+        limitSnackbar(buildSnackSuccess("Item added succesfully"));
       } else {
-        Get.showSnackbar(buildSnackError("Please fill in all required fields"));
+        limitSnackbar(buildSnackError("Please fill in all required fields"));
       }
     } catch (e) {}
   }
@@ -224,7 +225,7 @@ class ReportAddController extends GetxController {
         });
 
         Get.back();
-        Get.showSnackbar(
+        limitSnackbar(
           buildSnack(
             "Success",
             "${type == 'category' ? reportCategory : reportData} deleted from ${type == 'category' ? 'category' : 'type'}",
@@ -238,7 +239,7 @@ class ReportAddController extends GetxController {
         Get.snackbar("Error", "Please select category/type to continue remove.");
       }
     } catch (e) {
-      Get.showSnackbar(
+      limitSnackbar(
         buildSnack("Error", "Please select category/type to continue remove."),
       );
     } finally {

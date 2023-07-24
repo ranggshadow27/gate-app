@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:uicons/uicons.dart';
 
 import '../../../components/colors.dart';
+import '../../../components/widgets/button.dart';
 import '../../../components/widgets/text_widget.dart';
 import '../controllers/admin_home_controller.dart';
 
@@ -96,14 +97,49 @@ class AdminHomeView extends GetView<AdminHomeController> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          FirebaseAuth.instance.signOut();
-          Get.offAllNamed(Routes.LOGIN);
+          confirmLogout(
+            () async {
+              await FirebaseAuth.instance.signOut();
+              Get.offAllNamed(Routes.LOGIN);
+            },
+          );
         },
         backgroundColor: redColor,
         child: RIcon(icon: UIcons.regularRounded.sign_out_alt),
       ),
     );
   }
+}
+
+confirmLogout(
+  VoidCallback callback,
+) {
+  return Get.defaultDialog(
+    title: "Confirm",
+    middleText: "Are you sure to Sign Out?",
+    confirm: RButton(
+      color: redColor,
+      text: "Sign Out",
+      height: 46,
+      width: 120,
+      callback: callback,
+    ),
+    cancel: OutlinedButton(
+      onPressed: () => Get.back(),
+      style: OutlinedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        side: BorderSide(color: borderColor),
+        fixedSize: Size(120, 46),
+      ),
+      child: RText(
+        text: "Cancel",
+        textStyle: interMedium,
+        color: bgColor,
+      ),
+    ),
+  );
 }
 
 Widget buildStreamAdmin(Stream<DocumentSnapshot<Map<String, dynamic>>>? stream) {

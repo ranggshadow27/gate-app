@@ -5,6 +5,7 @@ import 'package:gate/app/components/fonts.dart';
 import 'package:gate/app/components/widgets/button.dart';
 import 'package:gate/app/components/widgets/custom_icon.dart';
 import 'package:gate/app/components/widgets/custom_snackbar.dart';
+import 'package:gate/app/components/widgets/snackbar_logic.dart';
 import 'package:gate/app/components/widgets/textfield.dart';
 import 'package:gate/app/controllers/page_setup_controller.dart';
 
@@ -13,6 +14,7 @@ import 'package:intl/intl.dart';
 import 'package:uicons/uicons.dart';
 
 import '../../../components/widgets/bottom_navigation.dart';
+import '../../../components/widgets/loading_widget.dart';
 import '../../../components/widgets/text_widget.dart';
 import '../../../routes/app_pages.dart';
 import '../controllers/home_controller.dart';
@@ -36,7 +38,7 @@ class HomeView extends GetView<HomeController> {
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
-                        child: CircularProgressIndicator(),
+                        child: RLoading(),
                       );
                     }
 
@@ -169,7 +171,7 @@ class HomeView extends GetView<HomeController> {
                   builder: (context, snapshotTodayPresence) {
                     if (snapshotTodayPresence.connectionState == ConnectionState.waiting) {
                       return Center(
-                        child: CircularProgressIndicator(),
+                        child: RLoading(),
                       );
                     }
 
@@ -215,7 +217,7 @@ class HomeView extends GetView<HomeController> {
                   stream: controller.getUserHistoryPresence(),
                   builder: (context, snapshotHistory) {
                     if (snapshotHistory.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
+                      return Center(child: RLoading());
                     }
 
                     if (snapshotHistory.data?.docs.length == 0 || snapshotHistory.data == null) {
@@ -297,7 +299,7 @@ class RLastPresenceBoard extends StatelessWidget {
                 SizedBox(height: 4),
                 RText(
                   text: getHistoryData['masuk']['device'] != null
-                      ? getHistoryData['masuk']['device']
+                      ? getHistoryData['masuk']['device'].toString().toUpperCase()
                       : "NO DEVICE",
                   textStyle: interRegular,
                   fontSize: 10.0,
@@ -425,7 +427,7 @@ class HomeIconBox extends StatelessWidget {
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             fixedSize: Size(64, 64),
-            backgroundColor: bgColor,
+            backgroundColor: borderColor,
             side: BorderSide(color: borderColor),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
@@ -486,14 +488,14 @@ class ROvertimeDialog extends StatelessWidget {
                     callback: () {
                       if (pageController.isLoading.isFalse) {
                         if (pageController.overtimeTextC.text.isEmpty) {
-                          Get.showSnackbar(buildSnackError("Please input the required field."));
+                          limitSnackbar(buildSnackError("Please input the required field."));
                         } else {
                           Get.dialog(
                             Dialog(
                               backgroundColor: Colors.transparent,
                               elevation: 0,
                               child: Center(
-                                child: CircularProgressIndicator(),
+                                child: RLoading(),
                               ),
                             ),
                           );

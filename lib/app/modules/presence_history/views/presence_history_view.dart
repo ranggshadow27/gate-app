@@ -11,6 +11,7 @@ import '../../../components/colors.dart';
 import '../../../components/fonts.dart';
 import '../../../components/widgets/bottom_navigation.dart';
 import '../../../components/widgets/custom_icon.dart';
+import '../../../components/widgets/loading_widget.dart';
 import '../../../components/widgets/text_widget.dart';
 import '../../../routes/app_pages.dart';
 import '../controllers/presence_history_controller.dart';
@@ -97,8 +98,9 @@ class PresenceHistoryDetailsView extends GetView<PresenceHistoryController> {
                       future: controller.getUserPresenceHistory(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(
-                            child: CircularProgressIndicator(),
+                          return Container(
+                            height: Get.height * .7,
+                            child: Center(child: RLoading()),
                           );
                         }
                         print("Snapshot -> ${snapshot.data?.docs}");
@@ -234,7 +236,7 @@ class PresenceHistoryTile extends StatelessWidget {
                     ),
                     SizedBox(height: 2),
                     RText(
-                      text: "HUAWEI INE LX2",
+                      text: userHistoryData['masuk']['device'].toString().toUpperCase(),
                       textStyle: interRegular,
                       color: whiteColor.withOpacity(.6),
                       fontSize: 10.0,
